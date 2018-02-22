@@ -30,9 +30,15 @@ end
 
 %% interleave both signals
 if (nr_channels == 2) %stereo
+% 	temp = in';
+% 	x = temp(:);
+% 	y =1;
     x = reshape(in, 1, []); %x will be a row vector
 else %mono
+% 	in(:,2) = in;
+% 	in = in';
+% 	x = in(:);
+% 	y = 2;
     temp = [in, in];
     x = reshape(temp, 1, []); %x will be a row vector
-end
 end
