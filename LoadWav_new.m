@@ -25,7 +25,7 @@ if fs == 8000
 elseif fs == 16000
     in = downsample(in, 2);
 else
-    error("unable to downsample to 8kHz");
+    error('unable to downsample to 8kHz');
 end
 
 %% interleave both signals

@@ -15,6 +15,9 @@ Flength2 = 0;
 
 %% Get input from wav file
 [input,~,~,~] = LoadWav_new('f116');
+%soundsc(input);
+%left = input(2:2:end);
+%right = input(1:2:end);
 
 %% Analysis
 [c0,c1] = analysis(input,h0);
@@ -26,10 +29,10 @@ Flength2 = 0;
 %% Synthesis
 y0 = synthesis(s0,s1,f2);
 y1 = synthesis(s2,s3,f2);
-result = synthesis(y0,y1,f0);
+result = synthesis(c0,c1,f0);
 
 %% Sound
-figure();
+
 plot(input); hold on
 plot(result);
 soundsc(result);
