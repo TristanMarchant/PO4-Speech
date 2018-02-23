@@ -4,14 +4,14 @@
 fs = 8000;
 df = fs/10;
 Astop = 60;
-fstep = fs/4410;
+fstep = fs/800;
 Niter = 100;
-Flength1 = 0;
-Flength2 = 0;
+Flength1 = 64;
+Flength2 = 32;
 
 %% Generate h0, h1, f0 and f1
 [h0,h1,f0,f1] = QMF_design(fs,df,Astop,fstep,Niter,Flength1); % First tree stage filter
-[h2,h3,f2,f3] = QMF_design(fs,df,Astop,fstep,Niter,Flength2); % Second tree stage filter
+[h2,h3,f2,f3] = QMF_design(fs/2,df/2,Astop,fstep/2,Niter,Flength2); % Second tree stage filter
 
 %% Get input from wav file
 [input,~,~,~] = LoadWav_new('f116');
