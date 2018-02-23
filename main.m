@@ -14,7 +14,7 @@ Flength2 = 0;
 [h2,h3,f2,f3] = QMF_design(fs,df,Astop,fstep,Niter,Flength2); % Second tree stage filter
 
 %% Get input from wav file
-[input,~,~,~] = LoadWav_new('f116');
+[input,fs,~,~] = LoadWav_new('f116');
 left = input(1:2:end);
 right = input(2:2:end);
 
