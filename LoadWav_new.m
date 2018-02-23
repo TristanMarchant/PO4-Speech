@@ -24,15 +24,16 @@ nr_channels = size(in,2);
 if fs == 8000
 elseif fs == 16000
     in = downsample(in, 2);
+    fs = 8000;
 else
     error('unable to downsample to 8kHz');
 end
 
 %% interleave both signals
 if (nr_channels == 2) %stereo
-    x = reshape(in, 1, []); %x will be a row vector
+    x = reshape(in.', 1, []); %x will be a row vector
 else %mono
     temp = [in, in];
-    x = reshape(temp, 1, []); %x will be a row vector
+    x = reshape(temp.', 1, []); %x will be a row vector
 end
 end
