@@ -1,7 +1,7 @@
 % Main .m file
 
 %% QMF Design parameters
-fs = 44100;
+fs = 8000;
 df = fs/10;
 Astop = 60;
 fstep = fs/4410;
@@ -15,9 +15,11 @@ Flength2 = 0;
 
 %% Get input from wav file
 [input,~,~,~] = LoadWav_new('f116');
+left = input(1:2:end);
+right = input(2:2:end);
 
 %% Analysis
-[c0,c1] = analysis(input,h0);
+[c0,c1] = analysis(left,h0);
 [s0,s1] = analysis(c0,h2);
 [s2,s3] = analysis(c1,h2);
 
@@ -30,7 +32,7 @@ result = synthesis(y0,y1,f0);
 
 %% Sound
 figure();
-plot(input); hold on
+plot(left); hold on
 plot(result);
-soundsc(result);
+soundsc(result,fs);
 
