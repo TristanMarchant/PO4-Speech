@@ -16,7 +16,7 @@ Flength2 = 32;
 %[h4,h5,f4,f5] = QMF_design(fs/4,df/4,Astop,fstep/4,Niter,Flength3); % Third stage filter
 
 %% Get input from wav file
-[input,~,~,~] = LoadWav_new('f116');
+[input,fs,~,~] = LoadWav_new('f116');
 left = input(1:2:end);
 right = input(2:2:end);
 
