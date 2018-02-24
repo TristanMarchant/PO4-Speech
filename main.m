@@ -27,14 +27,23 @@ right = input(2:2:end);
 %[s4,s5] = analysis(s0,h4);
 %[s6,s7] = analysis(s1,h4);
 
+%% Encode
+es0 = Encode(s0,1);
+es1 = Encode(s1,1);
+es2 = Encode(s2,1);
+es3 = Encode(s3,1);
 
-%% BETWEEN ANALYSIS AND SYNTHESIS WILL BE PROCESSING
+%% Decode
+ds0 = decode(es0,1);
+ds1 = decode(es1,1);
+ds2 = decode(es2,1);
+ds3 = decode(es3,1);
 
 %% Synthesis
 %y3 = synthesis(s6,s7,f4);
 %y2 = synthesis(s4,s5,f4);
-y0 = synthesis(s0,s1,f2);
-y1 = synthesis(s2,s3,f2);
+y0 = synthesis(ds0,ds1,f2);
+y1 = synthesis(ds2,ds3,f2);
 result = synthesis(y0,y1,f0);
 
 %% Sound
