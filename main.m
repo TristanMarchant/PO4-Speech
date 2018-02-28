@@ -50,5 +50,6 @@ result = synthesis(y0,y1,f0);
 figure();
 plot(left); hold on
 plot(result);
-soundsc(result,fs);
+pval = pesq(left,result,8000)
+%soundsc(result,fs);
 
