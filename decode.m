@@ -12,8 +12,12 @@ output = zeros(1,length(input)+1);
 
 for i = 1:(length(input)+1)
     %TODO Calculate stepsize based on input
+    
     if ((length(input)+1) ~= i)
         d_prime = stepsize * input(i);
+        if mod(i,500) == 0 && i>500
+            stepsize = StepsizeCalculation(input(i-500:i),3);
+        end
     end   
     s_star = mu*output(i);
     output(i) = d_prime + s_star;
