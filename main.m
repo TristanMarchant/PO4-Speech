@@ -18,6 +18,7 @@ Flength2 = 32;
 %% Get input from wav file
 [input,fs,~,~] = LoadWav_new('f116');
 left = input(1:2:end);
+left = left*2^15;
 right = input(2:2:end);
 
 %% Analysis
@@ -28,16 +29,16 @@ right = input(2:2:end);
 %[s6,s7] = analysis(s1,h4);
 
 %% Encode
-es0 = Encode(s0,1);
-es1 = Encode(s1,1);
-es2 = Encode(s2,1);
-es3 = Encode(s3,1);
+es0 = Encode(s0,0.60);
+es1 = Encode(s1,0.33);
+es2 = Encode(s2,0.28);
+es3 = Encode(s3,-0.07);
 
 %% Decode
-ds0 = decode(es0,1);
-ds1 = decode(es1,1);
-ds2 = decode(es2,1);
-ds3 = decode(es3,1);
+ds0 = decode(es0,0.60);
+ds1 = decode(es1,0.33);
+ds2 = decode(es2,0.28);
+ds3 = decode(es3,-0.07);
 
 %% Synthesis
 %y3 = synthesis(s6,s7,f4);
@@ -51,5 +52,5 @@ figure();
 plot(left); hold on
 plot(result);
 pval = pesq(left,result,8000)
-%soundsc(result,fs);
+soundsc(result,fs);
 

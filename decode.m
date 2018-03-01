@@ -6,17 +6,19 @@ function [ output ] = decode(input,mu)
 %   Calculate the stepsize based on the quantised samples (same method as
 %   encode to get the same stepsizes and that way the original signal).
 
-mu = 1;
-stepsize = 0.01;
+%mu = 1;
+stepsize = 1;
 output = zeros(1,length(input)+1);
 
 for i = 1:(length(input)+1)
-    %TODO Calculate stepsize based on input
     
     if ((length(input)+1) ~= i)
         d_prime = stepsize * input(i);
-        if mod(i,500) == 0 && i>500
-            stepsize = StepsizeCalculation(input(i-500:i),3);
+        if mod(i,10) == 0 && i>10
+            stepsize = StepsizeCalculation(input(i-10:i),5);
+            if stepsize == 0
+                stepsize = 1; 
+            end  
         end
     end   
     s_star = mu*output(i);
