@@ -1,5 +1,7 @@
-% Put the audio samples of a *.wav-file in a buffer with alternating L and R samples.
+% Put the audio samples of a *.wav-file in a buffer with alternating L and 
+% R samples.
 % Data is pairwise identical if mono input, interleaved if input is stereo.
+% All samples are scaled to 16-bit signed.
 
 % takes the filename without extention as input, should be placed in
 % subfolder wavfiles
@@ -28,6 +30,9 @@ elseif fs == 16000
 else
     error('unable to downsample to 8kHz');
 end
+
+%% scale signal to 16-bit signed
+in = in .* 2^15;
 
 %% interleave both signals
 if (nr_channels == 2) %stereo
