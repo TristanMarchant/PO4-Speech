@@ -1,8 +1,7 @@
 % Main .m file
 %% Get input from wav file
-[input,fs,~,~] = LoadWav_new('words_f');
+[input,fs,~,~] = LoadWav_new('f116');
 left = input(1:2:end);
-left = left*2^15;
 right = input(2:2:end);
 
 % %% QMF Design parameters
@@ -26,6 +25,7 @@ right = input(2:2:end);
 % %[s4,s5] = analysis(s0,h4);
 % %[s6,s7] = analysis(s1,h4);
 [subbands, f0, f2] = splitSubbands(left, fs);
+close all
 s0 = subbands(1,:);
 s1 = subbands(2,:);
 s2 = subbands(3,:);
@@ -36,6 +36,7 @@ es0 = Encode(s0,0.60);
 es1 = Encode(s1,0.33);
 es2 = Encode(s2,0.28);
 es3 = Encode(s3,-0.07);
+
 
 %% Decode
 ds0 = decode(es0,0.60);
@@ -52,8 +53,10 @@ result = synthesis(y0,y1,f0);
 
 %% Sound
 figure();
+%TODO Align result and input
+result = [zeros(1,20) result];
 plot(left); hold on
 plot(result);
 pval = pesq(left,result,8000)
-soundsc(result,fs);
+%soundsc(result,fs);
 

@@ -22,7 +22,7 @@ stepsize_opt = [1.7320 1.5956 1.4142 1.1547;
             
 SampleVariance = var(ADPCM_coded); %the vaiance of the encoder output
 Phi = stepsize_opt(bitspersample,2); %the factor opt_ss/var(output)
-step_size = Phi * SampleVariance;
+step_size = Phi * sqrt(SampleVariance);
 
 end
             

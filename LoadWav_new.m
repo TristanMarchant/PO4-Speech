@@ -32,7 +32,7 @@ else
 end
 
 %% scale signal to 16-bit signed
-in = in .* 2^15;
+in = in * 2^15;
 
 %% interleave both signals
 if (nr_channels == 2) %stereo

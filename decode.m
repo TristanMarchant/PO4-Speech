@@ -14,8 +14,8 @@ for i = 1:(length(input)+1)
     
     if ((length(input)+1) ~= i)
         d_prime = stepsize * input(i);
-        if mod(i,10) == 0 && i>10
-            stepsize = StepsizeCalculation(input(i-10:i),5);
+        if mod(i,10) == 0 && i>=10
+            stepsize = StepsizeCalculation(input(i-9:i),3);
             if stepsize == 0
                 stepsize = 1; 
             end  
