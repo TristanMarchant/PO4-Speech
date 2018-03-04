@@ -20,9 +20,6 @@ function [mu] = estimateMu(nb_subbands)
         %process each subband
         for i = 1:size(subbands,1)
             subband_signal = subbands(i,:);
-            figure
-            plot(subband_signal);
-            title("original signal");
             mu_per_subband(i,1) = estimateMuPerSubband(subband_signal);
         end
         mu_estimations(:,j) = mu_per_subband;
