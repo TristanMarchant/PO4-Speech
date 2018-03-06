@@ -37,18 +37,22 @@ result = synthesis(y0,y1,f0);
 
 %% show/play result
 %TODO Align result and input properly
-result = [zeros(1,16) result];
+[acor,lag] = xcorr(left,result);
+[~,I] = max(abs(acor));
+lagDiff = lag(I);
+leftAligned = [zeros(1,lagDiff), left];
+
 
 % plot both original and result
 figure();
-plot(left); hold on
+plot(leftAligned); hold on
 plot(result);
 title('original signal and processed signal');
 legend('original signal', 'processed signal');
 
 % calculate and display PESQ
-pval = pesq(left,result,8000);
-disp('PESQ: ' + pval);
+pval = pesq(leftAligned,result,8000);
+disp(string('PESQ: ') + pval);
 
 % play result
 soundsc(result,fs);
