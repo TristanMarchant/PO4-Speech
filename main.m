@@ -48,7 +48,7 @@ legend('original signal', 'processed signal');
 
 % calculate and display PESQ
 pval = pesq(left,result,8000);
-disp("PESQ: " + pval);
+disp('PESQ: ' + pval);
 
 % play result
 soundsc(result,fs);
