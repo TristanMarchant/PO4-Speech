@@ -68,10 +68,8 @@ title('original signal and processed signal');
 legend('original signal', 'processed signal');
 
 % calculate and display PESQ and SNR
-pval = pesq(input_al',result_al',8000)
-seg = snrseg(result_al',input_al',8000)
+pval = pesq(input_al',result_al',fs)
+seg = snrseg(result_al',input_al',fs)
 
 % play result
 soundsc(result_al,fs);
-
-
