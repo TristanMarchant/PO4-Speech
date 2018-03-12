@@ -1,5 +1,5 @@
-%The following function determines the step size according to the outpur of
-%the ADPCM coding
+%The following function determines the step size according to the output of
+%the ADPCM encoder
 
 function [step_size] = StepsizeCalculation(input, bitspersample)
 
@@ -20,7 +20,7 @@ stepsize_opt = [1.7320 1.5956 1.4142 1.1547;
                 0.0271 0.0569 0.0961 0.1273;
                 0.0135 0.0308 0.0549 0.0743];
             
-Phi = stepsize_opt(bitspersample,2); %the factor opt_ss/var(output)
+Phi = stepsize_opt(bitspersample,2)+0.3/bitspersample; %the factor opt_ss/var(output)
 SD_input = std(input); % standard deviation of the input
 step_size = Phi * SD_input;
 

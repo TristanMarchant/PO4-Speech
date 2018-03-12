@@ -1,29 +1,34 @@
-function [ output,stepsizes_vec ] = decode(input,mu,no_bits)
-%DECODE Summary of this function goes here
-%   Decode the encoded subband signal
-%   Detailed explanation goes here
+% Function that decodes an encoded subband
+% Inputs:   - input is the encoded subband signal that has to be decoded
+%           - mu is the mu used for this subband (calculated in the
+%           estimateMu function.
+%           - no_bits are the number of bits per sample used for this
+%           subband (specified in the main function)
+% Output:   - the decoded subband signal
 
-%   Calculate the stepsize based on the quantised samples (same method as
-%   encode to get the same stepsizes and that way the original signal).
+function [output] = decode(input,mu,no_bits)
 
-%mu = 1;
+%initialization
 stepsize = 1;
-output = zeros(1,length(input)+1);
-stepsizes_vec = zeros(1,length(input)+1);
+output = zeros(1, length(input));
+delta_prime_array = zeros(1, length(input));
 
-for i = 1:(length(input)+1)
-    
-    if ((length(input)+1) ~= i)
-        d_prime = stepsize * input(i);
-        if mod(i,10) == 0 && i>=10
-            stepsize = StepsizeCalculation(input(i-9:i),no_bits);
+if no_bits ~= 0   
+    for i = 2:length(input)    
+        
+        % calculate delta_prime (i.e. dequantized estimation error)
+        delta_prime = input(i) * stepsize;
+        delta_prime_array(i) = delta_prime;
+
+        % update stepsize
+        if i>10
+            stepsize = StepsizeCalculation(delta_prime_array(i-9:i),no_bits);
             if stepsize == 0
-                stepsize = 1; 
+                stepsize = 1;
             end  
         end
-    end   
-    stepsizes_vec(i) = stepsize; 
-    s_star = mu*output(i);
-    output(i) = d_prime + s_star;
+      
+        % calculate the output
+        output(i) = delta_prime + mu * output(i-1);
+    end
 end
-

@@ -12,7 +12,7 @@
 % nbits: number of bits per sample
 % nr_channels: number of channels (1 for mono, 2 for stereo), if mono then
 % left and right signal contain the same values
-% author: Ellen
+
 function [x, fs, nbits, nr_channels] = LoadWav_new(filename)
 
 %% load data from file

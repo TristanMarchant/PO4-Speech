@@ -1,5 +1,5 @@
 % Computes 2 subband signals from an input
-% Inputs: inputstream and h0 (impulse response)
+% Inputs: inputstream and h0 (impulse response of the used filter)
 % Outputs: 2 subband signals
 
 function [c0,c1] = analysis(input,h0)

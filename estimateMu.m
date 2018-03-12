@@ -2,11 +2,11 @@
 % is minimized
 % nb_subbands: number of subbands
 % mu: a column-vector with the estimated values of mu per subband
-% author: Ellen
+
 function [mu] = estimateMu(nb_subbands)
-    training_data = ["belasting", "bir", "f116", ... "f216", 
-        "m116", "m216", ...
-        "words_f", "words_m"];
+    training_data = [string('belasting'), string('bir'), string('f116'), ... 'f216', 
+         string('m116'), string('m216'), ...
+         string('words_f'), string('words_m')];
     %calculate mu based on training data of different files
     mu_estimations = zeros(nb_subbands, size(training_data,2));
     for j = 1:size(training_data,2)
@@ -35,7 +35,7 @@ end
 %estimate mu given a subband signal by minimizing s_curr - mu * s_prev
 % signal: subband signal to process
 % mu: the result of the estimation
-%author: Ellen
+
 function [mu] = estimateMuPerSubband(signal)
     %TODO define treshold
     treshold = max(signal)/100;
@@ -69,6 +69,5 @@ function [mu] = estimateMuPerSubband(signal)
     signal_shifted = signal( 1, start_i:(end_i-1) );
 
     % solve a least square problem Ax=b equivalent to s_prev * mu = s_curr
-    % TODO PESQ?
     mu = signal_unshifted'\signal_shifted';
 end
