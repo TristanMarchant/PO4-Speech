@@ -8,7 +8,7 @@
 function [output] = encode(input,mu,no_bits)
 
 %initialization
-prediction = mu * input(1);
+prediction = round((mu * input(1))/2^15);
 codebook = -2^(no_bits-1):1:(2^(no_bits-1)-1);
 stepsize = 1;
 output = zeros(1, length(input));
@@ -16,17 +16,17 @@ delta_prime_array = zeros(1, length(input));
 
 if no_bits ~=0   
     for i = 2:length(input)
-        delta = input(i) - prediction;
+        delta = (input(i) - prediction)*2;
         
         %quantize delta
-        under_edge = (-2^(no_bits-1) + 0.5) * stepsize;
-        upper_edge = (2^(no_bits-1) - 1.5 ) * stepsize;
-        partition = under_edge:stepsize:upper_edge; 
+        under_edge = (-2^(no_bits-1) + 0.5) * stepsize*2;
+        upper_edge = (2^(no_bits-1) -  1.5) * stepsize*2;
+        partition = under_edge:(stepsize*2):upper_edge; 
         [~,delta_quantized] = quantiz(delta,partition,codebook);
         output(1,i) = delta_quantized;
 
         %calculate delta prime
-        delta_prime = delta_quantized * stepsize;
+        delta_prime = (delta_quantized * stepsize);
         delta_prime_array(i) = delta_prime;
 
         % update the stepsize
@@ -38,6 +38,6 @@ if no_bits ~=0
         end
        
         % calculate new prediction
-        prediction = mu * (delta_prime + prediction);
+        prediction = round((mu * (delta_prime + prediction))/2^15);
     end
 end

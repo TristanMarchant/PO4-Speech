@@ -6,7 +6,7 @@
 %beginning of the file
 
 %% Get input from wav file
-[input,fs,~,~] = LoadWav_new('f116');
+[input,fs,~,~] = LoadWav_new('belasting');
 left = input(1:2:end);
 right = input(2:2:end);
 
@@ -26,6 +26,7 @@ s3 = subbands(4,:);
 
 %% Fixed parameters used in encoder and decoder
 mu = [0.6645,0.2259,0.1576,-0.0958]; % Overall mu's
+mu = round(mu * 2^15);
 %mu = [0.3112,-0.1919,-0.2557,-0.3919,0.1576,-0.0958]; % Left 6 subbands
 bpsb = [4;4;2;2]; % bits per subband, sum should be 12 when 4 equal subbands
 %bpsb = [5;4;4;3;2;2]; % for 6 subbands (left)

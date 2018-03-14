@@ -19,10 +19,10 @@ stepsize_opt = [1.7320 1.5956 1.4142 1.1547;
                 0.0541 0.1041 0.1657 0.2130;
                 0.0271 0.0569 0.0961 0.1273;
                 0.0135 0.0308 0.0549 0.0743];
-            
-Phi = stepsize_opt(bitspersample,2) + 0.3/bitspersample; %the factor opt_ss/var(output)
-SD_input = std(input); % standard deviation of the input
-step_size = Phi * SD_input;
+stepsize_opt = round(stepsize_opt*2^8);
+Phi = stepsize_opt(bitspersample,2) + round((0.3/bitspersample)*2^8); %the factor opt_ss/var(output)
+SD_input = round(std(input)*2^8); % standard deviation of the input
+step_size = round((Phi * SD_input)/2^16);
 
 end
             

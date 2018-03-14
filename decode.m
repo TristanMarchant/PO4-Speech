@@ -17,7 +17,7 @@ if no_bits ~= 0
     for i = 2:length(input)    
         
         % calculate delta_prime (i.e. dequantized estimation error)
-        delta_prime = input(i) * stepsize;
+        delta_prime = round(input(i) * stepsize);
         delta_prime_array(i) = delta_prime;
 
         % update stepsize
@@ -29,6 +29,6 @@ if no_bits ~= 0
         end
       
         % calculate the output
-        output(i) = delta_prime + mu * output(i-1);
+        output(i) = round(delta_prime + (mu * output(i-1))/2^15);
     end
 end
