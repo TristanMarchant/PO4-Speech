@@ -7,3 +7,7 @@ C_code/SpeechCodecC/.vs/SpeechCodecC/v15/.suo
 *.ipch
 *.user
 .vs/
+*.obj
+*.ilk
+*.pdb
+*.idb

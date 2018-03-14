@@ -76,6 +76,8 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS
+</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -115,6 +117,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="receiver.c" />
+    <ClCompile Include="transmitter.c" />
+    <ClCompile Include="main.c" />
+    <ClCompile Include="wavpcm_io.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="receiver.h" />
+    <ClInclude Include="transmitter.h" />
+    <ClInclude Include="globals.h" />
+    <ClInclude Include="wavpcm_io.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,1 +1,6 @@
-﻿
+﻿  receiver.c
+  transmitter.c
+  main.c
+  wavpcm_io.c
+  Generating Code...
+  SpeechCodecC.vcxproj -> C:\Users\Ellen\Documents\GitHub\PO4-Speech\C_code\SpeechCodecC\Debug\SpeechCodecC.exe

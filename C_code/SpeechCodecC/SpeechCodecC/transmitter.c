@@ -1,7 +1,9 @@
 #include "globals.h"
 
+void analysis(short buffer[BUFFERSIZE / 2]);
+
 /* encode */
-void encode(short buffer[BUFFERSIZE])
+void transmitter(short buffer[BUFFERSIZE], unsigned short *encodedBuffer)
 {
 	//split in left and right signal
 	short leftSignal[BUFFERSIZE/2];
@@ -19,10 +21,12 @@ void encode(short buffer[BUFFERSIZE])
 
 	//TODO ADPCM left
 	//TODO ADPCM right
-	//TODO bit shifting
+	//TODO bit shifting into encodedBuffer
 }
 
 void analysis(short buffer[BUFFERSIZE / 2])
 {
 	//TODO
 }
+
+void ADPCMencoder4()

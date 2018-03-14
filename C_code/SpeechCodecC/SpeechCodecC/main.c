@@ -3,8 +3,8 @@
 #include <string.h>
 #include "wavpcm_io.h"
 #include "globals.h"
-#include "encode.h"
-#include "decode.h"
+#include "transmitter.h"
+#include "receiver.h"
 
 /* This is the function that is called when the program starts. */
 int main (int argc, char *argv[])
@@ -15,6 +15,7 @@ int main (int argc, char *argv[])
   short buffer[BUFFERSIZE]; 
   short reconstructedBuffer[BUFFERSIZE];
   int bufPos, bufIndex, read;
+  unsigned short encodedBuffer[8];
 
   memset(&input, 0, sizeof(struct wavpcm_input));
   input.resource=INPUTWAVFILE;
@@ -34,12 +35,12 @@ int main (int argc, char *argv[])
     read = wavpcm_input_read (&input, buffer);
 
     /* transform buffer (ENCODER) */
-	encode(buffer);
+	transmitter(buffer, encodedBuffer);
 
     /* if required, dump compressed output */
 
     /* inverse transform buffer (DECODER)*/
-	decode(); //TODO define correct arguments to pass
+	receiver(encodedBuffer, buffer);
     for (bufIndex=0; bufIndex<BUFFERSIZE; bufIndex++)
       reconstructedBuffer[bufIndex]=buffer[bufIndex];
 
