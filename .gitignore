@@ -1,13 +1,4 @@
 *.asv
 *.m~
 testEllen.m
-*.db
 *.opendb
-C_code/SpeechCodecC/.vs/SpeechCodecC/v15/.suo
-*.ipch
-*.user
-.vs/
-*.obj
-*.ilk
-*.pdb
-*.idb

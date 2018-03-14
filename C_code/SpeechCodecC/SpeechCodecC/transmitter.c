@@ -29,4 +29,4 @@ void analysis(short buffer[BUFFERSIZE / 2])
 	//TODO
 }
 
-void ADPCMencoder4()
+void ADPCMencoder4() {}

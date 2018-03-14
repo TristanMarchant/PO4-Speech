@@ -1,6 +1,2 @@
-﻿  receiver.c
-  transmitter.c
-  main.c
-  wavpcm_io.c
-  Generating Code...
-  SpeechCodecC.vcxproj -> C:\Users\Ellen\Documents\GitHub\PO4-Speech\C_code\SpeechCodecC\Debug\SpeechCodecC.exe
+﻿  transmitter.c
+c:\users\ellen\documents\github\po4-speech\c_code\speechcodecc\speechcodecc\transmitter.c(33): fatal error C1004: unexpected end-of-file found
