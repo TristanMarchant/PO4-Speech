@@ -6,7 +6,7 @@
 %beginning of the file
 
 %% Get input from wav file
-[input,fs,~,~] = LoadWav_new('belasting');
+[input,fs,~,~] = LoadWav_new('f116');
 left = input(1:2:end);
 right = input(2:2:end);
 
