@@ -2,9 +2,9 @@
 #include "fadeOut.h"
 
 const short h0_odd[16] = {320, -192, -1, 289, -749, 1546, -3201, 8982, 30212, -6476, 3670, -2465, 1735, -1120, 819, -461};
-const short h0_even[16] = {-461,	819,	 -1220,	1735, -2465, 3670, -6476, 30212,	8982, -3201,	1546, -749, 289,	 -1, -192, 320};
+const short h0_even[16] = {-461, 819, -1220, 1735, -2465, 3670, -6476, 30212, 8982, -3201, 1546, -749, 289, -1, -192, 320};
 const short h2_odd[8] = {650, 255, -1872, 7869, 30860, -6543, 3170, -1624};
-const short h2_even[8] = {-1624,	3170	, -6543, 30860, 7869, -1872,	255, 650};
+const short h2_even[8] = {-1624,3170, -6543, 30860, 7869, -1872,255, 650};
 
 /* transform the input signal in buffer to an encoded signal, stored in encodedBuffer */
 void transmitter(short *buffer, unsigned short *encodedBuffer)
@@ -43,7 +43,6 @@ void transmitter(short *buffer, unsigned short *encodedBuffer)
 }
 
 /* creates 4 subband signals */
-// recurrent function 
 void analysis(short *buffer, short *subband1, short *subband2, short *subband3, short *subband4)
 {
   //1.Analysis for L/R signal using h0 filter coeffcients
@@ -124,24 +123,29 @@ inputs: subband signal to encode, nb of quantisation bits to use
 void ADPCMencoder(short *subband1, short *subband2, short *subband3, short *subband4, struct chunk * encoderChunk)
 {
 	short initPrediction;
-	short initStepsize;
-
-	// per subband extract from chunk variable: 
-	// last sample, last stepsize from previous buffer
+	//TODO : define a function that initializes the encoderChunk (initial stepsize, previous sample ...)
+	initialize(encoderChunk);
 
 	// for each subband, call the ADPCMencoderSubband function
 	//subband1
 	initPrediction = mu_1 * subband1[0];
-	ADPCMencoderSubband(subband1, initPrediction, initStepsize, 4, codebook_4);
+	ADPCMencoderSubband(subband1, initPrediction, 4, codebook_4, encoderChunk) ;
+	initialize(encoderChunk);
+	
 	//subband2
 	initPrediction = mu_2 * subband2[0];
-	ADPCMencoderSubband(subband2, initPrediction, initStepsize, 4, codebook_4);
+	ADPCMencoderSubband(subband2, initPrediction, 4, codebook_4, encoderChunk);
+	initialize(encoderChunk);
+	
 	//subband3
 	initPrediction = mu_3 * subband3[0];
-	ADPCMencoderSubband(subband3, initPrediction, initStepsize, 2, codebook_2);
+	ADPCMencoderSubband(subband3, initPrediction, 2, codebook_2, encoderChunk);
+	initialize(encoderChunk);
+	
         //subband4
 	initPrediction = mu_4 * subband4[0];
-	ADPCMencoderSubband(subband4, initPrediction, initStepsize, 2, codebook_2);
+	ADPCMencoderSubband(subband4, initPrediction, 2, codebook_2, encoderChunk);
+	
 }
 
 /* encodes only one subband
@@ -153,28 +157,39 @@ input: pointer to the start of an array containing the subband signal
        choice of codebook depends on the subbands, input of the encoder
        inputs should be revisited, can't have so man inputs if the chunk variable carries the necessary coefficients
 */
-void ADPCMencoderSubband(short *subband, short prediction, short stepsize, short nbBits, short * codebook)//, short * encoded_subband)
+void ADPCMencoderSubband(short *subband, short prediction, short nbBits, short * codebook,  struct chunk * encoderChunk)//short * encoded_subband)
 {
 	short delta;
-	short quantized_delta[BUFFERSIZE/2];
+	short delta_approx;
+	short stepsize;
+	short quantized_delta;
 	short min_edge;
 	short max_edge;
-	  
+	int n_partition;
+	short partition[n_partition];
 	// encode all samples
 	for (int i = 1; i < BUFFERSIZE / 2; i++) {
+	  stepsize = encoderChunk->current_stepsize;
 	  delta = (subband[i] - prediction)*2;
-	  //min_edge = ;
-	  //max_edge = ;
-	  //TODO define partition
-	  quantize(delta, partition, codebook, quantized_delta)
 
+	  //defining partition
+	  min_edge = stepsize*(1-2**(nbBits));
+	  max_edge = stepsize*(-3+2**(nbBits));
+	  n_partition = (max_edge-min_edge)/(2*stepsize)+1;
+	  for(int j =0; j < n_partition; j++){
+	    partition[j]= min_edge + j*stepsize*2
+	  }
+	  quantize(delta, partition, codebook, quantized_delta)
 		
-		//TODO calculate delta prime
+	  //calculate delta prime
+	    delta_approx = stepsize*quantized_delta[0] //only one same is present in delta quantized as delta is of size 1
+	  
 		//TODO update the stepsize
 		//TODO update the prediction
 	}
 }
 
+/*function that quantizes a sample given a codebook and a partition*/
 void quantize(short * input, short * codebook, short * partition, short * quantized){
   int n = sizeof(input)/sizeof(short);
   int m = sizeof(partition)/sizeof(short);
