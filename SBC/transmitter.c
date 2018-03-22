@@ -6,18 +6,21 @@ const short h0_even[16] = {-461,	819,	 -1220,	1735, -2465, 3670, -6476, 30212,	8
 const short h2_odd[8] = {650, 255, -1872, 7869, 30860, -6543, 3170, -1624};
 const short h2_even[8] = {-1624,	3170	, -6543, 30860, 7869, -1872,	255, 650};
 
-
-
-void analysis(short *buffer, short *subband1, short *subband2, short *subband3, short *subband4);
-void ADPCMencoder();
-
-
-/* encode */
-void transmitter(short *buffer, unsigned short *encodedBuffer, struct Tx_chunk *chunk)
+/* transform the input signal in buffer to an encoded signal, stored in encodedBuffer */
+void transmitter(short *buffer, unsigned short *encodedBuffer)
 {
-	//split in left and right signal
 	short leftSignal[BUFFERSIZE/2];
 	short rightSignal[BUFFERSIZE/2];
+	short subband_l1[BUFFERSIZE / 2];
+	short subband_l2[BUFFERSIZE / 2];
+	short subband_l3[BUFFERSIZE / 2];
+	short subband_l4[BUFFERSIZE / 2];
+	short subband_r1[BUFFERSIZE / 2];
+	short subband_r2[BUFFERSIZE / 2];
+	short subband_r3[BUFFERSIZE / 2];
+	short subband_r4[BUFFERSIZE / 2];
+
+	//split in left and right signal
 	for (int bufPos = 0; bufPos < BUFFERSIZE; bufPos += 2) {
 		//TODO check if interleaved buffer starts with left sample
 		leftSignal[bufPos / 2] = buffer[bufPos];
@@ -26,15 +29,15 @@ void transmitter(short *buffer, unsigned short *encodedBuffer, struct Tx_chunk *
 	
 	/*LEFT*/
 	//analysis left
-	analysis(leftSignal);
-	//TODO ADPCM left
-	ADPCMencoder();
+	analysis(leftSignal, subband_l1, subband_l2, subband_l3, subband_l4);
+	//ADPCM left
+	ADPCMencoder(subband_l1, subband_l2, subband_l3, subband_l4);
 
 	/*RIGHT*/
 	//analysis right
-	analysis(rightSignal);
-	//TODO ADPCM right
-	ADPCMencoder();
+	analysis(rightSignal, subband_r1, subband_r2, subband_r3, subband_r4);
+	//ADPCM right
+	ADPCMencoder(subband_r1, subband_r2, subband_r3, subband_r4);
 
 	//TODO bit shifting into encodedBuffer
 }
@@ -118,36 +121,76 @@ void analysis(short *buffer, short *subband1, short *subband2, short *subband3, 
 /* encodes one subband signal 
 inputs: subband signal to encode, nb of quantisation bits to use
 */
-void ADPCMencoder(short *subband1, short *subband2, short *subband3, short *subband4)
+void ADPCMencoder(short *subband1, short *subband2, short *subband3, short *subband4, struct chunk * encoderChunk)
 {
 	short initPrediction;
 	short initStepsize;
-	short mu;
-	short prevInput;
+
 	// per subband extract from chunk variable: 
 	// last sample, last stepsize from previous buffer
 
 	// for each subband, call the ADPCMencoderSubband function
-	initPrediction = mu * prevInput;
-	ADPCMencoderSubband(subband1, initPrediction, initStepsize, 4);
+	//subband1
+	initPrediction = mu_1 * subband1[0];
+	ADPCMencoderSubband(subband1, initPrediction, initStepsize, 4, codebook_4);
+	//subband2
+	initPrediction = mu_2 * subband2[0];
+	ADPCMencoderSubband(subband2, initPrediction, initStepsize, 4, codebook_4);
+	//subband3
+	initPrediction = mu_3 * subband3[0];
+	ADPCMencoderSubband(subband3, initPrediction, initStepsize, 2, codebook_2);
+        //subband4
+	initPrediction = mu_4 * subband4[0];
+	ADPCMencoderSubband(subband4, initPrediction, initStepsize, 2, codebook_2);
 }
 
 /* encodes only one subband
 input: pointer to the start of an array containing the subband signal
        the first prediction value, will be updated
-	   the first stepsize value, will be updated
-	   the number of quantisation bits to use
+       the first stepsize value, will be updated
+       the number of quantization bits to use
+       /Oula
+       choice of codebook depends on the subbands, input of the encoder
+       inputs should be revisited, can't have so man inputs if the chunk variable carries the necessary coefficients
 */
-void ADPCMencoderSubband(short *subband, short prediction, short stepsize, short nbBits)
+void ADPCMencoderSubband(short *subband, short prediction, short stepsize, short nbBits, short * codebook)//, short * encoded_subband)
 {
 	short delta;
+	short quantized_delta[BUFFERSIZE/2];
+	short min_edge;
+	short max_edge;
+	  
 	// encode all samples
-	for (int i = 0; i < BUFFERSIZE / 2; i++) {
-		delta = (subband[i] - prediction)*2;
-		//TODO quantize delta
+	for (int i = 1; i < BUFFERSIZE / 2; i++) {
+	  delta = (subband[i] - prediction)*2;
+	  //min_edge = ;
+	  //max_edge = ;
+	  //TODO define partition
+	  quantize(delta, partition, codebook, quantized_delta)
+
+		
 		//TODO calculate delta prime
 		//TODO update the stepsize
 		//TODO update the prediction
 	}
 }
 
+void quantize(short * input, short * codebook, short * partition, short * quantized){
+  int n = sizeof(input)/sizeof(short);
+  int m = sizeof(partition)/sizeof(short);
+  int index;
+  for(int j=0;j<n;j++){
+    if (input[j] <= partition[0])
+      index = 0;
+    int k = 1;
+    while(k<m){
+       if (input[j] > partition[k-1] && input[j] <= partition[k])
+	  index = k;
+       k++;
+    }
+    if (input[j] > partition[m-1])
+      index = m;
+    
+    quantized[j] = codebook[index];
+  }
+}
