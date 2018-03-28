@@ -1,14 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "wavpcm_io.h"
 #include "globals.h"
 #include "transmitter.h"
 #include "receiver.h"
+#include "transmitterTest.h"
+
+bool transmitterTest();
 
 /* This is the function that is called when the program starts. */
 int main (int argc, char *argv[])
 {
+	disp(transmitterTest());
   /* Variable declarations. */
   struct wavpcm_input input;
   struct wavpcm_output output;

@@ -1,5 +1,5 @@
 #include "globals.h"
-#include "fadeOut.h"
+#include "transmitter.h"
 
 const short h0_odd[16] = {320, -192, -1, 289, -749, 1546, -3201, 8982, 30212, -6476, 3670, -2465, 1735, -1120, 819, -461};
 const short h0_even[16] = {-461, 819, -1220, 1735, -2465, 3670, -6476, 30212, 8982, -3201, 1546, -749, 289, -1, -192, 320};
@@ -7,7 +7,7 @@ const short h2_odd[8] = {650, 255, -1872, 7869, 30860, -6543, 3170, -1624};
 const short h2_even[8] = {-1624,3170, -6543, 30860, 7869, -1872,255, 650};
 
 /* transform the input signal in buffer to an encoded signal, stored in encodedBuffer */
-void transmitter(short *buffer, unsigned short *encodedBuffer)
+void transmitter(short *buffer, unsigned short *encodedBuffer, struct encoderChunk *encoderChunk)
 {
 	short leftSignal[BUFFERSIZE/2];
 	short rightSignal[BUFFERSIZE/2];
@@ -29,25 +29,25 @@ void transmitter(short *buffer, unsigned short *encodedBuffer)
 	
 	/*LEFT*/
 	//analysis left
-	analysis(leftSignal, subband_l1, subband_l2, subband_l3, subband_l4);
+	analysis(leftSignal, subband_l1, subband_l2, subband_l3, subband_l4, &encoderChunk);
 	//ADPCM left
-	ADPCMencoder(subband_l1, subband_l2, subband_l3, subband_l4);
+	ADPCMencoder(subband_l1, subband_l2, subband_l3, subband_l4, &encoderChunk);
 
 	/*RIGHT*/
 	//analysis right
-	analysis(rightSignal, subband_r1, subband_r2, subband_r3, subband_r4);
+	analysis(rightSignal, subband_r1, subband_r2, subband_r3, subband_r4, &encoderChunk);
 	//ADPCM right
-	ADPCMencoder(subband_r1, subband_r2, subband_r3, subband_r4);
+	ADPCMencoder(subband_r1, subband_r2, subband_r3, subband_r4, &encoderChunk);
 
 	//TODO bit shifting into encodedBuffer
 }
 
 /* creates 4 subband signals */
-void analysis(short *buffer, short *subband1, short *subband2, short *subband3, short *subband4)
+void analysis(short *buffer, short *subband1, short *subband2, short *subband3, short *subband4, struct encoderChunk *encoderChunk)
 {
   //1.Analysis for L/R signal using h0 filter coeffcients
   
-  int nconv_1 = BUFFERSIZE/4 + len(h0_odd) -1; //len(h0_odd) = 16
+  int nconv_1 = BUFFERSIZE/4 + len(h0_odd) - 1; //len(h0_odd) = 16
   
   short LR_even[BUFFERSIZE/4];
   short LR_odd[BUFFERSIZE/4];
@@ -61,15 +61,21 @@ void analysis(short *buffer, short *subband1, short *subband2, short *subband3, 
   
   short X0[nconv_1];
   short Y0[nconv_1];
+  //init convolution buffer
+  short convBuffer[52];
+  memcpy(&convBuffer, encoderChunk->prevBufferLeft, nbTaps1 * sizeof(short)); // copy 32 previous samples from chunk to convBuffer
+  memcpy(&convBuffer + nbTaps1 * sizeof(short), buffer, sizeof(buffer) * sizeof(short)); // copy input values in second part of convBuffer
+  
   for (int i = 0; i<nconv_1; i++)
+	  //TODO central part convolution
     {
       X0[i] = 0;
       Y0[i] = 0;
       for (int j=0; j<16;j++)
-	{
-	  X0 [i] += LR_even[i-j]*h0_even[j];
-	  Y0 [i] += LR_odd[i-j]*h0_odd[j];
-         }
+		{
+		  X0 [i] += LR_even[i-j]*h0_even[j];
+		  Y0 [i] += LR_odd[i-j]*h0_odd[j];
+			 }
       C0[i] = X0[i]+Y0[i];
       C1[i] = X0[i]-Y0[i];
     }
@@ -97,8 +103,10 @@ void analysis(short *buffer, short *subband1, short *subband2, short *subband3, 
 
   for (int i = 0; i<nconv_2; i++)
     {
-      X1[i] = 0;
-      Y2[i] = 0;
+      XC0[0] = 0;
+      XC1[0] = 0;
+	  YC0[0] = 0;
+	  YC1[0] = 0;
       for (int j=0; j<8;j++)
 	{
 	  if (i >= j)
@@ -109,10 +117,10 @@ void analysis(short *buffer, short *subband1, short *subband2, short *subband3, 
 	    YC1 [i] += C1_odd[i-j]*h2_odd[j];
 	    }
 	}
-      subband1[i] = XC0[i]+YC0[i];
-      subband2[i] = XC0[i]-YC0[i];
-      subband3[i] = XC1[i]+YC1[i];
-      subband4[i] = XC1[i]-YC1[i];
+      subband1[i] = (XC0[i]+YC0[i]) / (pow(2, 16));
+      subband2[i] = (XC0[i]-YC0[i]) / (pow(2, 16));
+      subband3[i] = (XC1[i]+YC1[i]) / (pow(2, 16));
+      subband4[i] = (XC1[i]-YC1[i]) / (pow(2, 16));
     }
 
 }
@@ -120,7 +128,7 @@ void analysis(short *buffer, short *subband1, short *subband2, short *subband3, 
 /* encodes one subband signal 
 inputs: subband signal to encode, nb of quantisation bits to use
 */
-void ADPCMencoder(short *subband1, short *subband2, short *subband3, short *subband4, struct chunk * encoderChunk)
+void ADPCMencoder(short *subband1, short *subband2, short *subband3, short *subband4, struct encoderChunk * encoderChunk)
 {
 	short initPrediction;
 	//TODO : define a function that initializes the encoderChunk (initial stepsize, previous sample ...)
@@ -168,21 +176,21 @@ void ADPCMencoderSubband(short *subband, short prediction, short nbBits, short *
 	int n_partition;
 	short partition[n_partition];
 	// encode all samples
-	for (int i = 1; i < BUFFERSIZE / 2; i++) {
+	for (int i = 0; i < BUFFERSIZE / 2; i++) {
 	  stepsize = encoderChunk->current_stepsize;
 	  delta = (subband[i] - prediction)*2;
 
 	  //defining partition
-	  min_edge = stepsize*(1-2**(nbBits));
-	  max_edge = stepsize*(-3+2**(nbBits));
+	  min_edge = stepsize*(1-2^(nbBits));
+	  max_edge = stepsize*(-3+2^(nbBits));
 	  n_partition = (max_edge-min_edge)/(2*stepsize)+1;
 	  for(int j =0; j < n_partition; j++){
-	    partition[j]= min_edge + j*stepsize*2
+		  partition[j] = min_edge + j * stepsize * 2;
 	  }
-	  quantize(delta, partition, codebook, quantized_delta)
+	  quantize(delta, partition, codebook, quantized_delta);
 		
 	  //calculate delta prime
-	    delta_approx = stepsize*quantized_delta[0] //only one same is present in delta quantized as delta is of size 1
+	  delta_approx = stepsize * quantized_delta[0]; //only one same is present in delta quantized as delta is of size 1
 	  
 		//TODO update the stepsize
 		//TODO update the prediction

@@ -5,6 +5,9 @@
 #define INPUTWAVFILE  "input.wav"
 #define OUTPUTWAVFILE "output.wav"
 
+#define nbTaps1 32
+#define nbTaps2 16
+
 #define mu_1 21774
 #define mu_2 7402
 #define mu_3 5164
@@ -19,5 +22,3 @@
 #define phi_2 = 293;
 
 #define VERBOSE
-
-
