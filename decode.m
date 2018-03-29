@@ -8,19 +8,18 @@
 
 function [output] = decode(input,mu,no_bits)
 
-%initialization
+% Initialization
 stepsize = 1;
 output = zeros(1, length(input));
 delta_prime_array = zeros(1, length(input));
 
 if no_bits ~= 0   
     for i = 2:length(input)    
-        
-        % calculate delta_prime (i.e. dequantized estimation error)
+        % Calculate delta_prime
         delta_prime = round(input(i) * stepsize);
         delta_prime_array(i) = delta_prime;
 
-        % update stepsize
+        % Update stepsize
         if i>10
             stepsize = StepsizeCalculation(delta_prime_array(i-9:i),no_bits);
             if stepsize == 0
@@ -28,7 +27,7 @@ if no_bits ~= 0
             end  
         end
       
-        % calculate the output
+        % Calculate the output
         output(i) = round(delta_prime + (mu * output(i-1))/2^15);
     end
 end

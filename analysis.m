@@ -1,29 +1,25 @@
-% Computes 2 subband signals from an input
-% Inputs: inputstream and h0 (impulse response of the used filter)
-% Outputs: 2 subband signals
+% Elementary block that computes 2 subband signals from an input
+% Inputs:   -input: signal to be split 
+%           -h: impulse response of the used filter
+% Outputs:  -c0: lower frequency subband
+%           -c1: higher frequency subband
 
-function [c0,c1] = analysis(input,h0)
+function [c0,c1] = analysis(input,h)
 
 input_even = input(2:2:end);
 input_odd = input(1:2:end);
 
-h0_even = h0(2:2:end);
-h0_odd = h0(1:2:end);
-%Fixed point (no overflow abs(h0)<0.5)
-h0_even = round(2^16*h0_even);
-h0_odd = round(2^16*h0_odd);
+h_even = h(2:2:end);
+h_odd = h(1:2:end);
 
-x0 = conv(input_even,h0_even,'same');
-y0 = conv(input_odd,h0_odd,'same');
+h_even = round(2^15*h_even);
+h_odd = round(2^15*h_odd);
 
-x0 = round(x0/2^16);
-y0 = round(y0/2^16);
+x0 = conv(input_even,h_even,'same');
+y0 = conv(input_odd,h_odd,'same');
 
-% for i = 1:length(x0)
-%     if x0(i) > 32767
-%         error('error overflow');
-%     end
-% end
+x0 = round(x0/2^15);
+y0 = round(y0/2^15);
 
 c0 = x0 + y0;
 c1 = x0 - y0;
