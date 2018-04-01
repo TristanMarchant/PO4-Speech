@@ -6,14 +6,14 @@
 #include "globals.h"
 #include "transmitter.h"
 #include "receiver.h"
-#include "transmitterTest.h"
+//#include "transmitterTest.h"
 
-bool transmitterTest();
+//bool transmitterTest();
 
 /* This is the function that is called when the program starts. */
 int main (int argc, char *argv[])
 {
-	disp(transmitterTest());
+	//disp(transmitterTest());
   /* Variable declarations. */
   struct wavpcm_input input;
   struct wavpcm_output output;
@@ -21,6 +21,23 @@ int main (int argc, char *argv[])
   short reconstructedBuffer[BUFFERSIZE];
   int bufPos, bufIndex, read;
   unsigned short encodedBuffer[8];
+
+  // Our struct initialization
+  struct encoderChunk encoderChunkLeft;
+  memset(encoderChunkLeft.prevBufferEven,0,25*sizeof(short));
+  memset(encoderChunkLeft.prevBufferOdd,0,25*sizeof(short));
+  memset(encoderChunkLeft.prevBufferC0Even,0,12*sizeof(short));
+  memset(encoderChunkLeft.prevBufferC0Odd,0,12*sizeof(short));
+  memset(encoderChunkLeft.prevBufferC1Even,0,12*sizeof(short));
+  memset(encoderChunkLeft.prevBufferC1Odd,0,12*sizeof(short));
+  struct encoderChunk encoderChunkRight;
+  memset(encoderChunkRight.prevBufferEven,0,25*sizeof(short));
+  memset(encoderChunkRight.prevBufferOdd,0,25*sizeof(short));
+  memset(encoderChunkRight.prevBufferC0Even,0,12*sizeof(short));
+  memset(encoderChunkRight.prevBufferC0Odd,0,12*sizeof(short));
+  memset(encoderChunkRight.prevBufferC1Even,0,12*sizeof(short));
+  memset(encoderChunkRight.prevBufferC1Odd,0,12*sizeof(short));
+
 
   memset(&input, 0, sizeof(struct wavpcm_input));
   input.resource=INPUTWAVFILE;
@@ -40,12 +57,12 @@ int main (int argc, char *argv[])
     read = wavpcm_input_read (&input, buffer);
 
     /* transform buffer (ENCODER) */
-	transmitter(buffer, encodedBuffer);
+	transmitter(buffer, &encoderChunkLeft, &encoderChunkRight, encodedBuffer);
 
     /* if required, dump compressed output */
 
     /* inverse transform buffer (DECODER)*/
-	receiver(encodedBuffer, buffer);
+	//receiver(encodedBuffer, buffer);
     for (bufIndex=0; bufIndex<BUFFERSIZE; bufIndex++)
       reconstructedBuffer[bufIndex]=buffer[bufIndex];
 
