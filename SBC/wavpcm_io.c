@@ -328,8 +328,8 @@ void wavpcm_output_close (struct wavpcm_output *output)
   memset(&waveHeader, 0, sizeof(struct PCM_WAVE_HEADER));
   memset(&waveChunkHeader, 0, sizeof(struct PCM_WAVE_CHUNK_HEADER));
 
-  strcpy(waveHeader.riff, "RIFF");
-  strcpy(waveHeader.wavefmt, "WAVEfmt ");
+  strncpy(waveHeader.riff, "RIFF",sizeof(waveHeader.riff));
+  strncpy(waveHeader.wavefmt, "WAVEfmt ",sizeof(waveHeader.wavefmt));
   waveHeader.bitDepth = output->bitDepth;
   waveHeader.blockAlign = output->channels * (output->bitDepth / 8);
   waveHeader.bytesPerSecond = waveHeader.blockAlign * output->samplingRate;
@@ -338,7 +338,7 @@ void wavpcm_output_close (struct wavpcm_output *output)
   waveHeader.headerSize = 16;
   waveHeader.type = 1;
   waveHeader.samplingRate = output->samplingRate;
-  strcpy(waveChunkHeader.name, "data");
+  strncpy(waveChunkHeader.name, "data",sizeof(waveChunkHeader.name));
   waveChunkHeader.size = output->dataLength;
 	
   /* We need to seek back to the start of the file and write the header. */

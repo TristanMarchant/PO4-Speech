@@ -20,6 +20,7 @@
 *  ************************************************************************ */
 #include "globals.h"
 
+
 /*Note: we are assuming short is 16 bit, char is 8 bit etc: not so for DSP */ 
 
 struct wavpcm_input

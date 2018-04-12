@@ -2,17 +2,23 @@
 #include "transmitter.h"
 #include "math.h"
 #include "string.h"
-
-const short h0_odd[16] = {320, -192, -1, 289, -749, 1546, -3201, 8982, 30212, -6476, 3670, -2465, 1735, -1120, 819, -461};
+#include "receiver.h"
+#include <stdio.h>
+/*const short h0_odd[16] = {320, -192, -1, 289, -749, 1546, -3201, 8982, 30212, -6476, 3670, -2465, 1735, -1120, 819, -461};
 const short h0_even[16] = {-461, 819, -1220, 1735, -2465, 3670, -6476, 30212, 8982, -3201, 1546, -749, 289, -1, -192, 320};
 const short h2_odd[8] = {650, 255, -1872, 7869, 30860, -6543, 3170, -1624};
 const short h2_even[8] = {-1624,3170, -6543, 30860, 7869, -1872,255, 650};
+*/
+const short h0_even[16] = {-115,    205,    -305,    434,    -616,    918,    -1619,    7553,    2246,    -800,    387,    -187,    72,    0,    -48,    80};
+const short h0_odd[16] = {80,    -48,    0,    72,    -187,    387,    -800,    2246,    7553,    -1619,    918,    -616,    434,    -305,    205,    -115};
+const short h2_even[8] = {-406,    793,    -1636,    7715,    1967,    -468,    64,    163};
+const short h2_odd[8] = {163,    64,    -468,    1967,    7715,    -1636,    793,    -406};
 
 /* transform the input signal in buffer to an encoded signal, stored in encodedBuffer */
-void transmitter(short *buffer, struct encoderChunk *encoderChunkLeft, struct encoderChunk *encoderChunkRight, unsigned short encodedBuffer)
+void transmitter(short * buffer, struct encoderChunk * encoderChunkLeft, struct encoderChunk * encoderChunkRight, unsigned short * encodedBuffer, int test, struct decoderChunk * decoderChunkLeft, struct decoderChunk * decoderChunkRight)
 {
-	short leftSignal[BUFFERSIZE/2];
-	short rightSignal[BUFFERSIZE/2];
+	short leftSignal[BUFFERSIZE / 2];
+	short rightSignal[BUFFERSIZE / 2];
 	short subband_l1[BUFFERSIZE / 8];
 	short subband_l2[BUFFERSIZE / 8];
 	short subband_l3[BUFFERSIZE / 8];
@@ -21,35 +27,54 @@ void transmitter(short *buffer, struct encoderChunk *encoderChunkLeft, struct en
 	short subband_r2[BUFFERSIZE / 8];
 	short subband_r3[BUFFERSIZE / 8];
 	short subband_r4[BUFFERSIZE / 8];
-
+    
 	//split in left and right signal
 	for (int bufPos = 0; bufPos < BUFFERSIZE; bufPos += 2) {
-		//TODO check if interleaved buffer starts with left sample
 		leftSignal[bufPos / 2] = buffer[bufPos];
 		rightSignal[bufPos / 2] = buffer[bufPos + 1];
 	}
-	
+    
 	/*LEFT*/
 	//analysis left
 	//analysis(leftSignal, subband_l1, subband_l2, subband_l3, subband_l4, &encoderChunkLeft);
-	analysis(leftSignal, buffer, subband_l2, subband_l3, subband_l4, &encoderChunkLeft);
+	analysis(leftSignal, subband_l1, subband_l2, subband_l3, subband_l4, encoderChunkLeft,test);
 	//ADPCM left
 	//ADPCMencoder(subband_l1, subband_l2, subband_l3, subband_l4, &encoderChunkLeft);
 
 	/*RIGHT*/
 	//analysis right
-	analysis(rightSignal, subband_r1, subband_r2, subband_r3, subband_r4, &encoderChunkRight);
+	analysis(rightSignal, subband_r1, subband_r2, subband_r3, subband_r4, encoderChunkRight,test);
 	//ADPCM right
 	//ADPCMencoder(subband_r1, subband_r2, subband_r3, subband_r4, &encoderChunkLeft);
-
 	//TODO bit 'packing'
+    /*if (test==1) {
+        for (int i =0; i<5; i++) {
+            printf("sb1: %d \n",subband_l1[i]);
+        }
+     
+     }*/
+	// TESTING SYNTHESIS
+	short resultLeft[20] = {0};
+	short resultRight[20] = {0};
+	/*struct decoderChunk decoderChunkLeft; // WTF MONGOOL
+    memset(&decoderChunkLeft,0,sizeof(struct decoderChunk));
+	struct decoderChunk decoderChunkRight;
+    memset(&decoderChunkRight,0,sizeof(struct decoderChunk));*/
+
+	synthesis(subband_l1,subband_l2,subband_l3,subband_l4,decoderChunkLeft,resultLeft,test);
+	synthesis(subband_r1,subband_r2,subband_r3,subband_r4,decoderChunkRight,resultRight,test);
+
+	for (int i = 0; i < 40; i+=2) {
+		buffer[i] = resultLeft[i/2];
+		buffer[i+1] = resultRight[i/2];
+	}
+    
 }
 
 /* creates 4 subband signals */
-void analysis(short *buffer, short *subband1, short *subband2, short *subband3, short *subband4, struct encoderChunk *encoderChunk)
+void analysis(short *buffer, short *subband1, short *subband2, short *subband3, short *subband4, struct encoderChunk *encoderChunk, int test)
 {
   // 1st Stage Analysis using h0 filter coefficients
-  
   short Even[BUFFERSIZE/4];
   short Odd[BUFFERSIZE/4];
   long long C0[10];
@@ -57,11 +82,11 @@ void analysis(short *buffer, short *subband1, short *subband2, short *subband3, 
   
   // Split even and odd
   for (int bufPos = 0; bufPos < (BUFFERSIZE/2); bufPos += 2) {
-    Even[bufPos / 2] = buffer[bufPos];
-    Odd[bufPos / 2] = buffer[bufPos + 1];
+    Odd[bufPos / 2] = buffer[bufPos];
+    Even[bufPos / 2] = buffer[bufPos + 1];
   }
-  
-  // Update the chunk
+    
+  // Update the chunk (ik denk dat dit werkt)
   for (int i = 0; i<25; i++) {
 	  if (i<15) {
 		  encoderChunk->prevBufferEven[i] = encoderChunk -> prevBufferEven[i+10];
@@ -72,10 +97,30 @@ void analysis(short *buffer, short *subband1, short *subband2, short *subband3, 
 		  encoderChunk->prevBufferOdd[i] = Odd[i-15];
 	  }
   }
-
+   
+    
+    /*if (test ==1) {
+        for (int i = 0; i<25; i++) {
+            printf("prevBufEven: %d \n",encoderChunk->prevBufferEven[i]);
+        }
+    }*/
+    /*if (test ==1) {
+        for (int i = 0; i<25; i++) {
+            printf("prevBufOdd: %d \n",encoderChunk->prevBufferOdd[i]);
+        }
+    }*/
   // Execute first stage convolution
-  ConvolutionStage1(encoderChunk->prevBufferEven,encoderChunk->prevBufferOdd,h0_even,h0_odd,C0,C1);
-
+  ConvolutionStage1(encoderChunk->prevBufferEven,encoderChunk->prevBufferOdd,C0,C1, test);
+    /*if (test ==1) {
+        for (int i = 0; i<10; i++) {
+            printf("C0: %lld \n",C0[i]);
+        }
+    }
+    if (test ==1) {
+        for (int i = 0; i<10; i++) {
+            printf("C1: %lld \n",C1[i]);
+        }
+    }*/
   // 2nd Stage Analysis using h2 filter coefficients
 
   short C0_even[5];
@@ -85,18 +130,12 @@ void analysis(short *buffer, short *subband1, short *subband2, short *subband3, 
   
   // Split even and odd
   for (int bufPos = 0; bufPos < 10; bufPos += 2) {
-    C0_even[bufPos / 2] = C0[bufPos];
-    C1_even[bufPos / 2] = C1[bufPos];
-    C0_odd[bufPos / 2] = C0[bufPos + 1];
-    C1_odd[bufPos / 2] = C1[bufPos + 1];
+    C0_odd[bufPos / 2] = C0[bufPos];
+    C1_odd[bufPos / 2] = C1[bufPos];
+    C0_even[bufPos / 2] = C0[bufPos + 1];
+    C1_even[bufPos / 2] = C1[bufPos + 1];
   }
-
-  short XC0[5];
-  short YC0[5];
-  short XC1[5];
-  short YC1[5];
-
-
+    
   // Update the chunk
   for (int i = 0; i<12; i++) {
   	  if (i<7) {
@@ -108,58 +147,53 @@ void analysis(short *buffer, short *subband1, short *subband2, short *subband3, 
   	  else {
   		  encoderChunk->prevBufferC0Even[i] = C0_even[i-7];
   		  encoderChunk->prevBufferC0Odd[i] = C0_odd[i-7];
-  		  encoderChunk->prevBufferC0Even[i] = C1_even[i-7];
-		  encoderChunk->prevBufferC0Odd[i] = C1_odd[i-7];
+  		  encoderChunk->prevBufferC1Even[i] = C1_even[i-7];
+		  encoderChunk->prevBufferC1Odd[i] = C1_odd[i-7];
   	  }
     }
 
-
-  // Convolution stage 2
-  int k = 0;
-  for (int i = 7; i<12; i++)
-    {
-      XC0[i] = 0;
-      XC1[i] = 0;
-	  YC0[i] = 0;
-	  YC1[i] = 0;
-      for (int j=0; j<8;j++)
-	{
-	    XC0 [k] += encoderChunk->prevBufferC0Even[i-j]*h2_even[j];
-	    YC0 [k] += encoderChunk->prevBufferC0Odd[i-j]*h2_odd[j];
-	    XC1 [k] += encoderChunk->prevBufferC1Even[i-j]*h2_even[j];
-	    YC1 [k] += encoderChunk->prevBufferC1Odd[i-j]*h2_odd[j];
-	    }
-
-      subband1[k] = (XC0[k]+YC0[k]) / (pow(2, 16));
-      subband2[k] = (XC0[k]-YC0[k]) / (pow(2, 16));
-      subband3[k] = (XC1[k]+YC1[k]) / (pow(2, 16));
-      subband4[k] = (XC1[k]-YC1[k]) / (pow(2, 16));
-      k += 1;
-    }
-
+  // Execute stage 2 convolution
+  ConvolutionStage2(encoderChunk->prevBufferC0Even,encoderChunk->prevBufferC0Odd,encoderChunk->prevBufferC1Even,encoderChunk->prevBufferC1Odd,subband1,subband2,subband3,subband4, test);
+    
+    
 }
 
-void ConvolutionStage1(short * inputEven, short * inputOdd, short * filterEven, short * filterOdd, long long * C0, long long * C1) {
-	  int k = 0;
-	  long long X0[10] = {0};
+void ConvolutionStage1(short * inputEven, short * inputOdd, long long * C0, long long * C1, int test) {
+   
+      long long X0[10] = {0};
 	  long long Y0[10] = {0};
+	  for (int i = 15; i<25; i++) {
+	      for (int j=0; j<16;j++) {
+			  X0 [i-15] += inputEven[i-j]*h0_even[j];
+              
+			  Y0 [i-15] += inputOdd[i-j]*h0_odd[j];
+              
+	      }
+	      C0[i-15] = (X0[i-15]+Y0[i-15])/pow(2,14);
+	      C1[i-15] = (X0[i-15]-Y0[i-15])/pow(2,14);
+          
+	   }
+    
+}
 
-	  for (int i = 15; i<25; i++)
-
-	    {
-		  X0[i-15] = 0;
-		  Y0[i-15] = 0;
-	      for (int j=0; j<16;j++)
-			{
-			  X0 [k] += inputEven[i-j]*filterEven[j];
-			  Y0 [k] += inputOdd[i-j]*filterOdd[j];
-				 }
-	      k += 1;
-
-	    }
-	   for (int j = 0; j<10; j++) {
-		   C0[j] = (X0[j]+Y0[j])/pow(2,16);
-		   C1[j] = (X0[j]-Y0[j])/pow(2,16);
+void ConvolutionStage2(short * C0Even, short * C0Odd, short * C1Even, short * C1Odd, short * subband1, short * subband2, short * subband3, short * subband4, int test) {
+    
+    long long XC0[5] = {0};
+	long long YC0[5] = {0};
+	long long XC1[5] = {0};
+	long long YC1[5] = {0};
+	  for (int i = 7; i<12; i++) {
+	      for (int j=0; j<8;j++) {
+		    XC0[i-7] += C0Even[i-j]*h2_even[j];
+		    YC0[i-7] += C0Odd[i-j]*h2_odd[j];
+		    XC1[i-7] += C1Even[i-j]*h2_even[j];
+		    YC1[i-7] += C1Odd[i-j]*h2_odd[j];
+		  }
+	      subband1[i-7] = (XC0[i-7]+YC0[i-7]) / (pow(2, 14));
+	      subband2[i-7] = (XC0[i-7]-YC0[i-7]) / (pow(2, 14));
+	      subband3[i-7] = (XC1[i-7]+YC1[i-7]) / (pow(2, 14));
+	      subband4[i-7] = (XC1[i-7]-YC1[i-7]) / (pow(2, 14));
+          
 	   }
 }
 
