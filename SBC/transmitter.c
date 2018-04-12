@@ -197,6 +197,158 @@ void ConvolutionStage2(short * C0Even, short * C0Odd, short * C1Even, short * C1
 	   }
 }
 
+/*
+encodes all subband signals using ADPCM
+the result will be stored at the pointers used for the input
+a chunk is needed to contain values of the previous buffer
+*/
+void ADPCMencoder(short *subband1, short *subband2, short *subband3, short *subband4, struct encoderChunk * encoderChunk) {
+	short codebook4[16] = codebook_4;
+	//encode subband 1
+	ADPCMencoderSubband(subband1, mu_1, 4, encoderChunk->prediction1,
+		codebook4, 16, encoderChunk->stepsize1, encoderChunk->deltaPrimeArray1,
+		stepsizeOptFP_4);
+	//encode subband 2
+	ADPCMencoderSubband(subband2, mu_2, 4, encoderChunk->prediction2,
+		codebook4, 16, encoderChunk->stepsize2, encoderChunk->deltaPrimeArray2,
+		stepsizeOptFP_4);
+
+	short codebook2[4] = codebook_2;
+	//encode subband 3
+	ADPCMencoderSubband(subband3, mu_3, 2, encoderChunk->prediction3,
+		codebook2, 4, encoderChunk->stepsize3, encoderChunk->deltaPrimeArray3,
+		stepsizeOptFP_2);
+	//encode subband 4
+	ADPCMencoderSubband(subband4, mu_4, 2, encoderChunk->prediction4,
+		codebook2, 4, encoderChunk->stepsize4, encoderChunk->deltaPrimeArray4,
+		stepsizeOptFP_2);
+}
+
+/*
+encode only one given subband
+different input parameters are used:
+constant for each buffer -> mu, nbBits, codebook, codebookSize, stepsizeOptFP
+updated in the chunk -> prediction, stepsize, deltaPrimeArray
+the result will be stored at the pointer used for the input
+*/
+void ADPCMencoderSubband(short *subbandSignal, short mu, short nbBits,
+	short *prediction, short* codebook, short codebookSize, short *stepsize,
+	short *deltaPrimeArray, short stepsizeOptFP) {
+	short delta;
+	short deltaPrime;
+
+	//iterate over all samples in this subband signal
+	for (short i = 0; i < BUFFERSIZE / 8; i++) {
+		//calculate delta
+		delta = subbandSignal[i] - *prediction / pow(2, 2);
+
+		//quantize delta, store result back into the input array
+		subbandSignal[i] = quantize(delta, codebook, codebookSize, *stepsize);
+
+		//calculate delta prime
+		deltaPrime = subbandSignal[i] * *stepsize / pow(2, 16);
+
+		//update the array of deltaPrimes in the chunk
+		for (short j = 1; j < nbDelta; j++) {
+			deltaPrimeArray[j - 1] = deltaPrimeArray[j];
+		}
+		deltaPrimeArray[nbDelta - 1] = deltaPrime;
+
+		//update the stepsize
+		*stepsize = calculateStepsize(deltaPrimeArray, stepsizeOptFP, nbBits);
+		if (*stepsize == 0) {
+			*stepsize = 1;
+		}
+
+		//calculate the new prediction
+		*prediction = mu * (deltaPrime + *prediction) / pow(2, 16);
+	}
+	//chunk variable is automatically updated because we used a pointer 
+	//to stepsize and prediction
+
+	//output: encoded values are immediatly stored in the input subbandSignal variable
+}
+
+/*
+helper function for ADPCMencoderSubband
+quantizes the given value and returns the result
+*/
+short quantize(short value, short* codebook, short codebookSize, short stepsize) {
+	short lowerBound = codebook[0] * stepsize + stepsize / 2;
+	short upperBound = codebook[codebookSize] * stepsize - stepsize / 2;
+	short i = 0;
+	for (short bound = lowerBound; bound <= upperBound; bound = bound + stepsize) {
+		if (value <= bound) {
+			return codebook[i];
+		}
+	}
+	return codebook[i];
+}
+
+/*
+helper function for ADPCMencoderSubband
+calculates the new stepsize based on the previous values of delta prime (stored in deltaPrimeArray)
+and on phi (cfr. matlab implementation)
+*/
+short calculateStepsize(short* deltaPrimeArray, short stepsizeOptFP, short nbBits) {
+	short phi = stepsizeOptFP + pow(2, 15) * 0.3 / nbBits;
+
+	//TODO not sure about the std calculation
+	//short std = pow(2, 15) * calculateStd(deltaPrimeArray);
+	short std = calculateStdFP(deltaPrimeArray);
+
+	return phi * std / pow(2, 16);
+}
+
+/*
+helper function for calculateStepsize
+calculate the standard deviation of deltaPrimeArray (size: nbDelta)
+does not include a change to floating point
+*/
+short calculateStd(short* deltaPrimeArray) {
+	//TODO ask if long long can be used for this
+	long long mean = 0;
+	for (int i = 0; i < nbDelta; i++) {
+		mean = mean + deltaPrimeArray[i];
+	}
+	mean = mean / nbDelta;
+
+	long long std = 0;
+	for (int i = 0; i < nbDelta; i++) {
+		std = std + pow(abs(deltaPrimeArray[i] - mean), 2);
+	}
+	std = std / nbDelta;
+	std = sqrt(std);
+
+	return std;
+}
+
+
+/*
+helper function for calculateStepsize
+calculate the standard deviation of deltaPrimeArray (size: nbDelta)
+already includes a change to floating point
+*/
+short calculateStdFP(short* deltaPrimeArray) {
+	//TODO ask if long long can be used for this
+	long long mean = 0;
+	for (int i = 0; i < nbDelta; i++) {
+		mean = mean + deltaPrimeArray[i];
+	}
+	mean = mean / nbDelta;
+
+	long long std = 0;
+	for (int i = 0; i < nbDelta; i++) {
+		long long diff = pow(2, 15)*abs(deltaPrimeArray[i] - mean);
+		std = std + pow(diff, 2);
+	}
+	std = std / nbDelta;
+	std = sqrt(std);
+
+	return std;
+}
+
+
 /* encodes one subband signal 
 inputs: subband signal to encode, nb of quantisation bits to use
 */

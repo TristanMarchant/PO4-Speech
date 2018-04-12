@@ -15,6 +15,10 @@
 
 #define bpsb {4,4,2,2}
 
+#define nbDelta 10 //the number of previous delta primes to use for the standard deviation in the stepsize calculation
+#define stepsizeOptFP_4 10984
+#define stepsizeOptFP_2 32627
+
 #define codebook_4 {-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7};
 #define codebook_2 {-2,-1,0,1};
 
