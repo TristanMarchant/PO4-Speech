@@ -13,11 +13,33 @@ const short f2_odd[8] = {325,    127,    -936,    3935,    15430,    -3271,    1
 const short f0_even[16] = {-231,    409,    -610,    868,    -1232,    1835,    -3238,    15106,    4491,    -1601,    773,    -375,    145,    0,    -96,    160};
 const short f0_odd[16] = {160,    -96,    0,    145,    -375,    773,    -1601,    4491,    15106,    -3238,    1835,    -1232,    868,    -610,    409,    -231};
 /* decode */
-void receiver(unsigned short encodedBuffer[8], short *buffer)
+void receiver(unsigned short encodedBuffer[8], short *buffer, struct decoderChunk * decoderChunkLeft, struct decoderChunk * decoderChunkRight, int test)
 {
-	//TODO inverse ADPCM left
-	//TODO inverse ADPCM right
-	//TODO synthesis
+	//TODO Get 4 subbands from left and right out of the encodedBuffer (for now test with just 4 subbands in transmitter.c)
+    short subband1_l[5];
+    short subband1_r[5];
+    short subband2_l[5];
+    short subband2_r[5];
+    short subband3_l[5];
+    short subband3_r[5];
+    short subband4_l[5];
+    short subband4_r[5];
+    
+    // Decode LEFT
+    ADPCMdecoder(subband1_l,subband2_l,subband3_l,subband4_l,decoderChunkLeft);
+    // Decode RIGHT
+    ADPCMdecoder(subband1_r,subband2_r,subband3_r,subband4_r,decoderChunkRight);
+	
+    short resultLeft[20];
+    short resultRight[20];
+	// Synthesis LEFT
+    synthesis(subband1_l,subband2_l,subband3_l,subband4_l,decoderChunkLeft,resultLeft,test);
+    // Synthesis RIGHT
+    synthesis(subband1_r,subband2_r,subband3_r,subband4_r,decoderChunkRight,resultRight,test);
+    for (int i = 0; i < 40; i+=2) {
+        buffer[i] = resultLeft[i/2];
+        buffer[i+1] = resultRight[i/2];
+    }
 }
 void synthesis(short * subband1, short * subband2, short * subband3, short * subband4, struct decoderChunk * decoderChunk, short * result, int test){
 
@@ -133,4 +155,48 @@ void ConvolutionStage2dec(short * s10, short * s11, long long * f10, long long *
           f10[i-15] = f10[i-15]/pow(2,14);
          
 	  }
+}
+
+void ADPCMdecoder(short * subband1, short * subband2, short * subband3, short * subband4, struct decoderChunk * decoderChunk) {
+    
+    //Subband1
+    ADPCMdecoderSubband(subband1,mu_1,4,decoderChunk->stepsize1,decoderChunk->deltaPrimeArray1,phi_4,decoderChunk->prevoutput1);
+    
+    //Subband2
+    ADPCMdecoderSubband(subband2,mu_2,4,decoderChunk->stepsize2,decoderChunk->deltaPrimeArray2,phi_4,decoderChunk->prevoutput2);
+    
+    //Subband3
+    ADPCMdecoderSubband(subband3,mu_3,2,decoderChunk->stepsize3,decoderChunk->deltaPrimeArray3,phi_2,decoderChunk->prevoutput3);
+    
+    //Subband4
+    ADPCMdecoderSubband(subband4,mu_4,2,decoderChunk->stepsize4,decoderChunk->deltaPrimeArray4,phi_2,decoderChunk->prevoutput4);
+    
+}
+
+void ADPCMdecoderSubband(short * subbandSignal, short mu, short n0_bits, short stepsize, short * deltaPrimeArray, short PHI, short prevoutput) {
+    short delta_prime;
+    for (int i = 0; i<5; i++) {
+        
+        // Shift delta prime array to get the 10 most recent samples for the stepsize calculation
+        for (int j = 0; j < 9; j++) {
+            deltaPrimeArray[j] = deltaPrimeArray[j+1];
+        }
+        
+        // Calculate delta prime
+        delta_prime = subbandSignal[i] * stepsize;
+        deltaPrimeArray[9] = delta_prime;
+        
+        // Update stepsize
+        stepsize = calculateStepsize(deltaPrimeArray,PHI,n0_bits);
+        if (stepsize == 0) {
+            stepsize = 1;
+        }
+        
+        // Calculate output
+        subbandSignal[i] = delta_prime + (mu * prevoutput)/pow(2,15);
+        
+        // Update prevoutput
+        prevoutput = subbandSignal[i];
+        
+    }
 }

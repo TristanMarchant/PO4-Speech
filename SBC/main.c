@@ -28,10 +28,18 @@ int main (int argc, char *argv[])
     
   struct decoderChunk decoderChunkLeft;
   memset(&decoderChunkLeft,0,sizeof(struct decoderChunk));
+  decoderChunkLeft.stepsize1 = 1;
+  decoderChunkLeft.stepsize2 = 1;
+  decoderChunkLeft.stepsize3 = 1;
+  decoderChunkLeft.stepsize4 = 1;
     
   struct decoderChunk decoderChunkRight;
   memset(&decoderChunkRight,0,sizeof(struct decoderChunk));
-    
+  decoderChunkRight.stepsize1 = 1;
+  decoderChunkRight.stepsize2 = 1;
+  decoderChunkRight.stepsize3 = 1;
+  decoderChunkRight.stepsize4 = 1;
+
   int test = 0;
     
   memset(&input, 0, sizeof(struct wavpcm_input));
@@ -57,7 +65,7 @@ int main (int argc, char *argv[])
     /* if required, dump compressed output */
 
     /* inverse transform buffer (DECODER)*/
-	//receiver(encodedBuffer, buffer);
+	//receiver(encodedBuffer, buffer, &decoderChunkLeft, &decoderChunkRight, test);
       for (bufIndex=0; bufIndex<BUFFERSIZE; bufIndex++){
           reconstructedBuffer[bufIndex]=buffer[bufIndex];
           
