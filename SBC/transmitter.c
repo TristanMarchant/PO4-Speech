@@ -39,13 +39,13 @@ void transmitter(short * buffer, struct encoderChunk * encoderChunkLeft, struct 
 	//analysis(leftSignal, subband_l1, subband_l2, subband_l3, subband_l4, &encoderChunkLeft);
 	analysis(leftSignal, subband_l1, subband_l2, subband_l3, subband_l4, encoderChunkLeft,test);
 	//ADPCM left
-	//ADPCMencoder(subband_l1, subband_l2, subband_l3, subband_l4, &encoderChunkLeft);
+	ADPCMencoder(subband_l1, subband_l2, subband_l3, subband_l4, encoderChunkLeft);
 
 	/*RIGHT*/
 	//analysis right
 	analysis(rightSignal, subband_r1, subband_r2, subband_r3, subband_r4, encoderChunkRight,test);
 	//ADPCM right
-	//ADPCMencoder(subband_r1, subband_r2, subband_r3, subband_r4, &encoderChunkLeft);
+	ADPCMencoder(subband_r1, subband_r2, subband_r3, subband_r4, &encoderChunkLeft);
 	//TODO bit 'packing'
     /*if (test==1) {
         for (int i =0; i<5; i++) {
@@ -53,21 +53,22 @@ void transmitter(short * buffer, struct encoderChunk * encoderChunkLeft, struct 
         }
      
      }*/
-	// TESTING SYNTHESIS
-	short resultLeft[20] = {0};
-	short resultRight[20] = {0};
-	/*struct decoderChunk decoderChunkLeft; // WTF MONGOOL
-    memset(&decoderChunkLeft,0,sizeof(struct decoderChunk));
-	struct decoderChunk decoderChunkRight;
-    memset(&decoderChunkRight,0,sizeof(struct decoderChunk));*/
 
-	synthesis(subband_l1,subband_l2,subband_l3,subband_l4,decoderChunkLeft,resultLeft,test);
-	synthesis(subband_r1,subband_r2,subband_r3,subband_r4,decoderChunkRight,resultRight,test);
+	////TESTING SYNTHESIS AND ADPCM encoder/decoder
+	//short resultLeft[20] = {0};
+	//short resultRight[20] = {0};
+	///*struct decoderChunk decoderChunkLeft; // WTF MONGOOL
+ //   memset(&decoderChunkLeft,0,sizeof(struct decoderChunk));
+	//struct decoderChunk decoderChunkRight;
+ //   memset(&decoderChunkRight,0,sizeof(struct decoderChunk));*/
 
-	for (int i = 0; i < 40; i+=2) {
-		buffer[i] = resultLeft[i/2];
-		buffer[i+1] = resultRight[i/2];
-	}
+	//synthesis(subband_l1,subband_l2,subband_l3,subband_l4,decoderChunkLeft,resultLeft,test);
+	//synthesis(subband_r1,subband_r2,subband_r3,subband_r4,decoderChunkRight,resultRight,test);
+
+	//for (int i = 0; i < 40; i+=2) {
+	//	buffer[i] = resultLeft[i/2];
+	//	buffer[i+1] = resultRight[i/2];
+	//}
     
 }
 
@@ -205,22 +206,22 @@ a chunk is needed to contain values of the previous buffer
 void ADPCMencoder(short *subband1, short *subband2, short *subband3, short *subband4, struct encoderChunk * encoderChunk) {
 	short codebook4[16] = codebook_4;
 	//encode subband 1
-	ADPCMencoderSubband(subband1, mu_1, 4, encoderChunk->prediction1,
-		codebook4, 16, encoderChunk->stepsize1, encoderChunk->deltaPrimeArray1,
+	ADPCMencoderSubband(subband1, mu_1, 4, &(encoderChunk->prediction1),
+		codebook4, 16, &(encoderChunk->stepsize1), encoderChunk->deltaPrimeArray1,
 		stepsizeOptFP_4);
 	//encode subband 2
-	ADPCMencoderSubband(subband2, mu_2, 4, encoderChunk->prediction2,
-		codebook4, 16, encoderChunk->stepsize2, encoderChunk->deltaPrimeArray2,
+	ADPCMencoderSubband(subband2, mu_2, 4, &(encoderChunk->prediction2),
+		codebook4, 16, &(encoderChunk->stepsize2), encoderChunk->deltaPrimeArray2,
 		stepsizeOptFP_4);
 
 	short codebook2[4] = codebook_2;
 	//encode subband 3
-	ADPCMencoderSubband(subband3, mu_3, 2, encoderChunk->prediction3,
-		codebook2, 4, encoderChunk->stepsize3, encoderChunk->deltaPrimeArray3,
+	ADPCMencoderSubband(subband3, mu_3, 2, &(encoderChunk->prediction3),
+		codebook2, 4, &(encoderChunk->stepsize3), encoderChunk->deltaPrimeArray3,
 		stepsizeOptFP_2);
 	//encode subband 4
-	ADPCMencoderSubband(subband4, mu_4, 2, encoderChunk->prediction4,
-		codebook2, 4, encoderChunk->stepsize4, encoderChunk->deltaPrimeArray4,
+	ADPCMencoderSubband(subband4, mu_4, 2, &(encoderChunk->prediction4),
+		codebook2, 4, &(encoderChunk->stepsize4), encoderChunk->deltaPrimeArray4,
 		stepsizeOptFP_2);
 }
 
@@ -275,7 +276,7 @@ quantizes the given value and returns the result
 */
 short quantize(short value, short* codebook, short codebookSize, short stepsize) {
 	short lowerBound = codebook[0] * stepsize + stepsize / 2;
-	short upperBound = codebook[codebookSize] * stepsize - stepsize / 2;
+	short upperBound = codebook[codebookSize-1] * stepsize - stepsize / 2;
 	short i = 0;
 	for (short bound = lowerBound; bound <= upperBound; bound = bound + stepsize) {
 		if (value <= bound) {
