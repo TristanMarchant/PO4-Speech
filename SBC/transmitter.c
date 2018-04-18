@@ -47,7 +47,24 @@ void transmitter(short * buffer, struct encoderChunk * encoderChunkLeft, struct 
 	analysis(rightSignal, subband_r1, subband_r2, subband_r3, subband_r4, encoderChunkRight,test);
 	//ADPCM right
 	ADPCMencoder(subband_r1, subband_r2, subband_r3, subband_r4, &encoderChunkLeft);
-	//TODO bit 'packing'
+
+	/*BIT PACKING*/
+	//in the first 5 compactly packed shorts, store per short 4 quantised samples from
+	// subband_left1 (4 bits) - subband_left2 (4 bits) - subband_right1 (4 bits) - subband_right2 (4 bits)
+	for (int i = 0; i < 5; i++) {
+		encodedBuffer[i] = shiftAndCast4(subband_l1[i], 12) |
+						   shiftAndCast4(subband_l2[i], 8) |
+						   shiftAndCast4(subband_r1[i], 4) |
+						   shiftAndCast4(subband_r2[i], 0);
+	}
+
+	//in the next 3 compactly packed shorts, store data from the upper subbands
+	encodedBuffer[5] = shiftAndCast2(subband_l3[0], 14) | shiftAndCast2(subband_l4[0], 12) | shiftAndCast2(subband_r3[0], 10) | shiftAndCast2(subband_r4[0], 8)
+					 | shiftAndCast2(subband_l3[1], 6) | shiftAndCast2(subband_l4[1], 4) | shiftAndCast2(subband_r3[1], 2) | shiftAndCast2(subband_r4[1], 0);
+	encodedBuffer[6] = shiftAndCast2(subband_l3[2], 14) | shiftAndCast2(subband_l4[2], 12) | shiftAndCast2(subband_r3[2], 10) | shiftAndCast2(subband_r4[2], 8)
+					 | shiftAndCast2(subband_l3[3], 6) | shiftAndCast2(subband_l4[3], 4) | shiftAndCast2(subband_r3[3], 2) | shiftAndCast2(subband_r4[3], 0);
+	encodedBuffer[7] = shiftAndCast2(subband_l3[4], 14) | shiftAndCast2(subband_l4[4], 12) | shiftAndCast2(subband_r3[4], 10) | shiftAndCast2(subband_r4[4], 8);
+
     /*if (test==1) {
         for (int i =0; i<5; i++) {
             printf("sb1: %d \n",subband_l1[i]);
@@ -57,69 +74,80 @@ void transmitter(short * buffer, struct encoderChunk * encoderChunkLeft, struct 
 
     
     
-	// TESTING SYNTHESIS
-	//short resultLeft[20] = {0};
-	//short resultRight[20] = {0};
-	/*struct decoderChunk decoderChunkLeft; // WTF MONGOOL
-    memset(&decoderChunkLeft,0,sizeof(struct decoderChunk));
-	struct decoderChunk decoderChunkRight;
-    memset(&decoderChunkRight,0,sizeof(struct decoderChunk));*/
-    
-    /*
-	synthesis(subband_l1,subband_l2,subband_l3,subband_l4,decoderChunkLeft,resultLeft,test);
-	synthesis(subband_r1,subband_r2,subband_r3,subband_r4,decoderChunkRight,resultRight,test);
+	//// TESTING SYNTHESIS
+	////short resultLeft[20] = {0};
+	////short resultRight[20] = {0};
+	///*struct decoderChunk decoderChunkLeft; // WTF MONGOOL
+ //   memset(&decoderChunkLeft,0,sizeof(struct decoderChunk));
+	//struct decoderChunk decoderChunkRight;
+ //   memset(&decoderChunkRight,0,sizeof(struct decoderChunk));*/
+ //   
+ //   /*
+	//synthesis(subband_l1,subband_l2,subband_l3,subband_l4,decoderChunkLeft,resultLeft,test);
+	//synthesis(subband_r1,subband_r2,subband_r3,subband_r4,decoderChunkRight,resultRight,test);
 
-	for (int i = 0; i < 40; i+=2) {
-		buffer[i] = resultLeft[i/2];
-		buffer[i+1] = resultRight[i/2];
-	}*/
-    // TEST FULL ENCODE
-    ADPCMencoder(subband_l1, subband_l2, subband_l3, subband_l4, encoderChunkLeft, test);
-    /*if (test==1) {
-         for (int i = 0; i<5; i++) {
-         printf("sb3: %d \n",subband_l3[i]);
-         }
-    }*/
-    ADPCMencoder(subband_r1, subband_r2, subband_r3, subband_r4, encoderChunkRight,test);
-        // TESTING ENCODE PARTS (WORKS)
-    //short deltaPrimeArray[10] = {5,19,23,540,9,5,120,-4,0,300};
-    //short haha;
-    //short delta = 211;
-    //short codebook[16] = {-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7};
-    //haha = calculateStd(deltaPrimeArray);
-    /*if (test == 1) {
-        printf("hallo: %f \n", haha); // WORKS
-    }*/
-    
-    /*if (test == 1) {
-        haha = calculateStepsize(deltaPrimeArray,phi_4,4); // WORKS
-        printf("hallo: %d \n", haha);
-    }*/
-    /*if (test ==1) {
-        haha = quantize(delta,codebook,15,30); // WORKS
-        printf("hallo: %d \n", haha);
-    }*/
-    // Decode LEFT
-    ADPCMdecoder(subband_l1,subband_l2,subband_l3,subband_l4,decoderChunkLeft);
-    // Decode RIGHT
-    ADPCMdecoder(subband_r1,subband_r2,subband_r3,subband_r4,decoderChunkRight);
-    
-    short resultLeft[20];
-    short resultRight[20];
-    // Synthesis LEFT
-    synthesis(subband_l1,subband_l2,subband_l3,subband_l4,decoderChunkLeft,resultLeft,test);
-    // Synthesis RIGHT
-    synthesis(subband_r1,subband_r2,subband_r3,subband_r4,decoderChunkRight,resultRight,test);
-    for (int i = 0; i < 40; i+=2) {
-        buffer[i] = resultLeft[i/2];
-        buffer[i+1] = resultRight[i/2];
-    }
-    // EVERYTHING WORKS WITHOUT BITPACKING
-    
+	//for (int i = 0; i < 40; i+=2) {
+	//	buffer[i] = resultLeft[i/2];
+	//	buffer[i+1] = resultRight[i/2];
+	//}*/
+ //   // TEST FULL ENCODE
+ //   ADPCMencoder(subband_l1, subband_l2, subband_l3, subband_l4, encoderChunkLeft, test);
+ //   /*if (test==1) {
+ //        for (int i = 0; i<5; i++) {
+ //        printf("sb3: %d \n",subband_l3[i]);
+ //        }
+ //   }*/
+ //   ADPCMencoder(subband_r1, subband_r2, subband_r3, subband_r4, encoderChunkRight,test);
+ //       // TESTING ENCODE PARTS (WORKS)
+ //   //short deltaPrimeArray[10] = {5,19,23,540,9,5,120,-4,0,300};
+ //   //short haha;
+ //   //short delta = 211;
+ //   //short codebook[16] = {-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7};
+ //   //haha = calculateStd(deltaPrimeArray);
+ //   /*if (test == 1) {
+ //       printf("hallo: %f \n", haha); // WORKS
+ //   }*/
+ //   
+ //   /*if (test == 1) {
+ //       haha = calculateStepsize(deltaPrimeArray,phi_4,4); // WORKS
+ //       printf("hallo: %d \n", haha);
+ //   }*/
+ //   /*if (test ==1) {
+ //       haha = quantize(delta,codebook,15,30); // WORKS
+ //       printf("hallo: %d \n", haha);
+ //   }*/
+ //   // Decode LEFT
+ //   ADPCMdecoder(subband_l1,subband_l2,subband_l3,subband_l4,decoderChunkLeft);
+ //   // Decode RIGHT
+ //   ADPCMdecoder(subband_r1,subband_r2,subband_r3,subband_r4,decoderChunkRight);
+ //   
+ //   short resultLeft[20];
+ //   short resultRight[20];
+ //   // Synthesis LEFT
+ //   synthesis(subband_l1,subband_l2,subband_l3,subband_l4,decoderChunkLeft,resultLeft,test);
+ //   // Synthesis RIGHT
+ //   synthesis(subband_r1,subband_r2,subband_r3,subband_r4,decoderChunkRight,resultRight,test);
+ //   for (int i = 0; i < 40; i+=2) {
+ //       buffer[i] = resultLeft[i/2];
+ //       buffer[i+1] = resultRight[i/2];
+ //   }
+    // EVERYTHING WORKS WITHOUT BITPACKING 
+}
 
+/*
+Helper function for bit packing
+*/
+unsigned short shiftAndCast2(short value, short nbBits) {
+	unsigned short result = value << 14;
+	return (result >> (14-nbBits));
+}
 
-
-    
+/*
+Helper function for bit packing
+*/
+unsigned short shiftAndCast4(short value, short nbBits) {
+	unsigned short result = value << 12;
+	return (result >> (12 - nbBits));
 }
 
 /* creates 4 subband signals */
@@ -253,18 +281,18 @@ encodes all subband signals using ADPCM
 the result will be stored at the pointers used for the input
 a chunk is needed to contain values of the previous buffer
 */
-void ADPCMencoder(short *subband1, short *subband2, short *subband3, short *subband4, struct encoderChunk * encoderChunk, int test) {
+void ADPCMencoder(short *subband1, short *subband2, short *subband3, short *subband4, struct encoderChunk * encoderChunk) {
 	short codebook4[16] = codebook_4;
 	//encode subband 1
 
-	ADPCMencoderSubband(subband1, mu_1, 4, &encoderChunk->prediction1, codebook4, 15, &encoderChunk->stepsize1, encoderChunk->deltaPrimeArray1, phi_4, test);
+	ADPCMencoderSubband(subband1, mu_1, 4, &encoderChunk->prediction1, codebook4, 15, &encoderChunk->stepsize1, encoderChunk->deltaPrimeArray1, phi_4);
 	//encode subband 2
-	ADPCMencoderSubband(subband2, mu_2, 4, &encoderChunk->prediction2, codebook4, 15, &encoderChunk->stepsize2, encoderChunk->deltaPrimeArray2, phi_4, test);
+	ADPCMencoderSubband(subband2, mu_2, 4, &encoderChunk->prediction2, codebook4, 15, &encoderChunk->stepsize2, encoderChunk->deltaPrimeArray2, phi_4);
     short codebook2[4] = codebook_2;
 	//encode subband 3
-	ADPCMencoderSubband(subband3, mu_3, 2, &encoderChunk->prediction3, codebook2, 3, &encoderChunk->stepsize3, encoderChunk->deltaPrimeArray3, phi_2, test);
+	ADPCMencoderSubband(subband3, mu_3, 2, &encoderChunk->prediction3, codebook2, 3, &encoderChunk->stepsize3, encoderChunk->deltaPrimeArray3, phi_2);
 	//encode subband 4
-	ADPCMencoderSubband(subband4, mu_4, 2, &encoderChunk->prediction4, codebook2, 3, &encoderChunk->stepsize4, encoderChunk->deltaPrimeArray4, phi_2, test);
+	ADPCMencoderSubband(subband4, mu_4, 2, &encoderChunk->prediction4, codebook2, 3, &encoderChunk->stepsize4, encoderChunk->deltaPrimeArray4, phi_2);
 
 }
 
@@ -277,7 +305,7 @@ the result will be stored at the pointer used for the input
 */
 void ADPCMencoderSubband(short * subbandSignal, short mu, short nbBits,
 	short *prediction, short * codebook, short codebookSize, short *stepsize,
-	short * deltaPrimeArray, short stepsizeOptFP,int test) {
+	short * deltaPrimeArray, short stepsizeOptFP) {
 	short delta;
 	short deltaPrime;
 

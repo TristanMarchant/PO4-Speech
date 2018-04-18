@@ -13,9 +13,8 @@ const short f2_odd[8] = {325,    127,    -936,    3935,    15430,    -3271,    1
 const short f0_even[16] = {-231,    409,    -610,    868,    -1232,    1835,    -3238,    15106,    4491,    -1601,    773,    -375,    145,    0,    -96,    160};
 const short f0_odd[16] = {160,    -96,    0,    145,    -375,    773,    -1601,    4491,    15106,    -3238,    1835,    -1232,    868,    -610,    409,    -231};
 /* decode */
-void receiver(unsigned short encodedBuffer[8], short *buffer, struct decoderChunk * decoderChunkLeft, struct decoderChunk * decoderChunkRight, int test)
+void receiver(unsigned short* encodedBuffer, short *buffer, struct decoderChunk * decoderChunkLeft, struct decoderChunk * decoderChunkRight, int test)
 {
-	//TODO Get 4 subbands from left and right out of the encodedBuffer (for now test with just 4 subbands in transmitter.c)
     short subband1_l[5];
     short subband1_r[5];
     short subband2_l[5];
@@ -24,7 +23,38 @@ void receiver(unsigned short encodedBuffer[8], short *buffer, struct decoderChun
     short subband3_r[5];
     short subband4_l[5];
     short subband4_r[5];
+	short bufPos;
     
+	// bit unpacking
+	// retrieve the 4-bit values from the encoded buffer, stored in the first 5 shorts as
+	// subband_left1 (4 bits) - subband_left2 (4 bits) - subband_right1 (4 bits) - subband_right2 (4 bits)
+	for (int i = 0; i < 5; i++) {
+		subband1_l[i] = twosComplement4Bits((encodedBuffer[i] & 0xF000) >> 12);
+		subband2_l[i] = twosComplement4Bits((encodedBuffer[i] & 0x0F00) >> 8);
+		subband1_r[i] = twosComplement4Bits((encodedBuffer[i] & 0x00F0) >> 4);
+		subband2_r[i] = twosComplement4Bits((encodedBuffer[i] & 0x000F));
+	}
+
+	// retrieve the 2-bit values from the encoded buffer, stored in the last 3 shorts
+	for (int i = 0; i < 5; i++) {
+		//if i is even 
+		if ( !(i % 2) ) {
+			bufPos = 5 + i / 2;
+			subband3_l[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0xC000) >> 14);
+			subband4_l[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x3000) >> 12);
+			subband3_r[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x0C00) >> 10);
+			subband4_r[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x0300) >> 8);
+		}
+		//if i is uneven
+		else {
+			bufPos = 5 + (i - 1) / 2;
+			subband3_l[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x00C0) >> 6);
+			subband4_l[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x0030) >> 4);
+			subband3_r[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x000C) >> 2);
+			subband4_r[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x0003));
+		}
+	}
+
     // Decode LEFT
     ADPCMdecoder(subband1_l,subband2_l,subband3_l,subband4_l,decoderChunkLeft);
     // Decode RIGHT
@@ -41,6 +71,31 @@ void receiver(unsigned short encodedBuffer[8], short *buffer, struct decoderChun
         buffer[i+1] = resultRight[i/2];
     }
 }
+
+/*
+get the 2s complement representation right 
+*/
+short twosComplement2Bits(unsigned short value) {
+	//for a negative value, add 1's and keep the last 2 bits
+	if (value & 0x2) {
+		return (value | 0xFFFC);
+	}
+	//for a positive value, do nothing
+	return value;
+}
+
+/*
+get the 2s complement representation right
+*/
+short twosComplement4Bits(unsigned short value) {
+	//for a negative value, add 1's and keep the last 4 bits
+	if (value & 0x8) {
+		return (value | 0xFFF0);
+	}
+	//for a positive value, do nothing
+	return value;
+}
+
 void synthesis(short * subband1, short * subband2, short * subband3, short * subband4, struct decoderChunk * decoderChunk, short * result, int test){
 
 	short s20[5] = {0};

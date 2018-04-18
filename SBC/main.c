@@ -79,7 +79,6 @@ int main (int argc, char *argv[])
 
       if (bufPos == BUFFERSIZE*1000) {
           test = 1;
-          
       }
       
 	transmitter(buffer, &encoderChunkLeft, &encoderChunkRight, encodedBuffer, test, &decoderChunkLeft, &decoderChunkRight);

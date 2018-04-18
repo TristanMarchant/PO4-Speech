@@ -27,11 +27,14 @@ void analysis(short buffer[BUFFERSIZE], short subband1[BUFFERSIZE/8],  short sub
 void ConvolutionStage1(short inputEven[25], short inputOdd[25], long long  C0[10], long long C1[10], int test);
 void ConvolutionStage2(short C0Even[7], short C0Odd[7], short C1Even[7], short C1Odd[7], short subband1[BUFFERSIZE/8],  short subband2[BUFFERSIZE/8],  short subband3[BUFFERSIZE/8],  short subband4[BUFFERSIZE/8], int test);
 
-void ADPCMencoder(short *subband1, short *subband2, short *subband3, short *subband4, struct encoderChunk * encoderChunk, int test);
+void ADPCMencoder(short *subband1, short *subband2, short *subband3, short *subband4, struct encoderChunk * encoderChunk);
 void ADPCMencoderSubband(short *subbandSignal, short mu, short nbBits,
 	short *prediction, short* codebook, short codebookSize, short *stepsize,
-	short *deltaPrimeArray, short stepsizeOptFP, int test);
+	short *deltaPrimeArray, short stepsizeOptFP);
 short quantize(short value, short* codebook, short codebookSize, short stepsize);
 short calculateStepsize(short* deltaPrimeArray, short stepsizeOptFP, short nbBits);
 float calculateStd(short* deltaPrimeArray);
 short calculateStdFP(short* deltaPrimeArray);
+
+unsigned short shiftAndCast2(short value, short nbBits);
+unsigned short shiftAndCast4(short value, short nbBits);
