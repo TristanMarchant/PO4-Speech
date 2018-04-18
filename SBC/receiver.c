@@ -160,20 +160,20 @@ void ConvolutionStage2dec(short * s10, short * s11, long long * f10, long long *
 void ADPCMdecoder(short * subband1, short * subband2, short * subband3, short * subband4, struct decoderChunk * decoderChunk) {
     
     //Subband1
-    ADPCMdecoderSubband(subband1,mu_1,4,decoderChunk->stepsize1,decoderChunk->deltaPrimeArray1,phi_4,decoderChunk->prevoutput1);
+    ADPCMdecoderSubband(subband1,mu_1,4,&decoderChunk->stepsize1,decoderChunk->deltaPrimeArray1,phi_4,&decoderChunk->prevoutput1);
     
     //Subband2
-    ADPCMdecoderSubband(subband2,mu_2,4,decoderChunk->stepsize2,decoderChunk->deltaPrimeArray2,phi_4,decoderChunk->prevoutput2);
+    ADPCMdecoderSubband(subband2,mu_2,4,&decoderChunk->stepsize2,decoderChunk->deltaPrimeArray2,phi_4,&decoderChunk->prevoutput2);
     
     //Subband3
-    ADPCMdecoderSubband(subband3,mu_3,2,decoderChunk->stepsize3,decoderChunk->deltaPrimeArray3,phi_2,decoderChunk->prevoutput3);
+    ADPCMdecoderSubband(subband3,mu_3,2,&decoderChunk->stepsize3,decoderChunk->deltaPrimeArray3,phi_2,&decoderChunk->prevoutput3);
     
     //Subband4
-    ADPCMdecoderSubband(subband4,mu_4,2,decoderChunk->stepsize4,decoderChunk->deltaPrimeArray4,phi_2,decoderChunk->prevoutput4);
+    ADPCMdecoderSubband(subband4,mu_4,2,&decoderChunk->stepsize4,decoderChunk->deltaPrimeArray4,phi_2,&decoderChunk->prevoutput4);
     
 }
 
-void ADPCMdecoderSubband(short * subbandSignal, short mu, short n0_bits, short stepsize, short * deltaPrimeArray, short PHI, short prevoutput) {
+void ADPCMdecoderSubband(short * subbandSignal, short mu, short n0_bits, short * stepsize, short * deltaPrimeArray, short PHI, short * prevoutput) {
     short delta_prime;
     for (int i = 0; i<5; i++) {
         
@@ -183,20 +183,20 @@ void ADPCMdecoderSubband(short * subbandSignal, short mu, short n0_bits, short s
         }
         
         // Calculate delta prime
-        delta_prime = subbandSignal[i] * stepsize;
+        delta_prime = subbandSignal[i] * *stepsize;
         deltaPrimeArray[9] = delta_prime;
         
         // Update stepsize
-        stepsize = calculateStepsize(deltaPrimeArray,PHI,n0_bits);
-        if (stepsize == 0) {
-            stepsize = 1;
+        *stepsize = calculateStepsize(deltaPrimeArray,PHI,n0_bits);
+        if (*stepsize == 0) {
+            *stepsize = 1;
         }
         
         // Calculate output
-        subbandSignal[i] = delta_prime + (mu * prevoutput)/pow(2,15);
+        subbandSignal[i] = delta_prime + (mu * *prevoutput)/pow(2,15);
         
         // Update prevoutput
-        prevoutput = subbandSignal[i];
+        *prevoutput = subbandSignal[i];
         
     }
 }

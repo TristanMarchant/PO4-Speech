@@ -31,4 +31,4 @@ void ConvolutionStage2dec(short s10[10], short s11[10], long long f10[10], long 
 
 void ADPCMdecoder(short subband1[5], short subband2[5], short subband3[5], short subband4[5], struct decoderChunk * decoderChunk);
 
-void ADPCMdecoderSubband(short subbandSignal[5], short mu, short n0_bits, short stepsize, short deltaPrimeArray[10], short PHI, short prevoutput);
+void ADPCMdecoderSubband(short subbandSignal[5], short mu, short n0_bits, short * stepsize, short deltaPrimeArray[10], short PHI, short * prevoutput);

@@ -52,16 +52,21 @@ int main (int argc, char *argv[])
   /* and then use this same header configuration for the output file */
   wavpcm_output_copy_settings(&input, &output);
   wavpcm_output_open(&output);
-
   /*bufPos expressed in temporal samples*/
   for (bufPos=0; bufPos<input.samplesAvailable; bufPos+=(BUFFERSIZE/2)) {
     /* Try to read BUFFERSIZE samples (16 bits, pairwise identical if input is mono, interleaved if input is stereo)  */
     /* into buffer, with read the actual amount read (expressed in bytes! =  (2*read)/(channels * bitDepth/8) array elements)*/
     read = wavpcm_input_read (&input, buffer);
+      
     /* transform buffer (ENCODER) */
-
+      if (bufPos == BUFFERSIZE*1000) {
+          test = 1;
+          
+      }
 	transmitter(buffer, &encoderChunkLeft, &encoderChunkRight, encodedBuffer, test, &decoderChunkLeft, &decoderChunkRight);
-     
+      if (bufPos == BUFFERSIZE*1100) {
+          test = 0;
+      }
     /* if required, dump compressed output */
 
     /* inverse transform buffer (DECODER)*/

@@ -22,8 +22,8 @@
 #define codebook_4 {-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7}
 #define codebook_2 {-2,-1,0,1}
 
-#define phi_4 105
-#define phi_2 293
+#define phi_4 86
+#define phi_2 255
 
 #define VERBOSE
 
