@@ -22,9 +22,26 @@ int main (int argc, char *argv[])
   // Our struct initialization
   struct encoderChunk encoderChunkLeft;
   memset(&encoderChunkLeft,0,sizeof(struct encoderChunk));
+  encoderChunkLeft.stepsize1 = 1;
+  encoderChunkLeft.stepsize2 = 1;
+  encoderChunkLeft.stepsize3 = 1;
+  encoderChunkLeft.stepsize4 = 1;
+  encoderChunkLeft.prediction1 = 0;
+  encoderChunkLeft.prediction2 = 0;
+  encoderChunkLeft.prediction3 = 0;
+  encoderChunkLeft.prediction4 = 0;
+  //TODO init delta prime array because stepsize is otherwise calculated based on garbage? (in all chunks)
     
   struct encoderChunk encoderChunkRight;
   memset(&encoderChunkRight,0,sizeof(struct encoderChunk));
+  encoderChunkRight.stepsize1 = 1;
+  encoderChunkRight.stepsize2 = 1;
+  encoderChunkRight.stepsize3 = 1;
+  encoderChunkRight.stepsize4 = 1;
+  encoderChunkRight.prediction1 = 0;
+  encoderChunkRight.prediction2 = 0;
+  encoderChunkRight.prediction3 = 0;
+  encoderChunkRight.prediction4 = 0;
     
   struct decoderChunk decoderChunkLeft;
   memset(&decoderChunkLeft,0,sizeof(struct decoderChunk));
@@ -59,10 +76,12 @@ int main (int argc, char *argv[])
     read = wavpcm_input_read (&input, buffer);
       
     /* transform buffer (ENCODER) */
+
       if (bufPos == BUFFERSIZE*1000) {
           test = 1;
           
       }
+      
 	transmitter(buffer, &encoderChunkLeft, &encoderChunkRight, encodedBuffer, test, &decoderChunkLeft, &decoderChunkRight);
       if (bufPos == BUFFERSIZE*1100) {
           test = 0;
@@ -70,7 +89,7 @@ int main (int argc, char *argv[])
     /* if required, dump compressed output */
 
     /* inverse transform buffer (DECODER)*/
-	//receiver(encodedBuffer, buffer, &decoderChunkLeft, &decoderChunkRight, test);
+	receiver(encodedBuffer, buffer, &decoderChunkLeft, &decoderChunkRight, test);
       for (bufIndex=0; bufIndex<BUFFERSIZE; bufIndex++){
           reconstructedBuffer[bufIndex]=buffer[bufIndex];
           
