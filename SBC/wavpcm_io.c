@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include "wavpcm_io.h"
 #include "globals.h"
-#pragma warning (disable : 4996)
 
 /* ************************ */
 /* INPUT RELATED STRUCTURES */
