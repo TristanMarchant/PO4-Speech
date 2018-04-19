@@ -328,6 +328,7 @@ void wavpcm_output_close (struct wavpcm_output *output)
   memset(&waveHeader, 0, sizeof(struct PCM_WAVE_HEADER));
   memset(&waveChunkHeader, 0, sizeof(struct PCM_WAVE_CHUNK_HEADER));
 
+  /* COMMENT: HAD TO CHANGE STRCPY TO STRNCPY OR ELSE IT WOULDN'T COMPILE */
   strncpy(waveHeader.riff, "RIFF",sizeof(waveHeader.riff));
   strncpy(waveHeader.wavefmt, "WAVEfmt ",sizeof(waveHeader.wavefmt));
   waveHeader.bitDepth = output->bitDepth;

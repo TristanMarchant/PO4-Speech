@@ -19,7 +19,7 @@ int main (int argc, char *argv[])
   unsigned short encodedBuffer[8];
 
 
-  // Our struct initialization
+  /* Struct initialization */
   struct encoderChunk encoderChunkLeft;
   memset(&encoderChunkLeft,0,sizeof(struct encoderChunk));
     
@@ -39,8 +39,6 @@ int main (int argc, char *argv[])
   decoderChunkRight.stepsize2 = 1;
   decoderChunkRight.stepsize3 = 1;
   decoderChunkRight.stepsize4 = 1;
-
-  int test = 0;
     
   memset(&input, 0, sizeof(struct wavpcm_input));
   input.resource=INPUTWAVFILE;
@@ -59,21 +57,16 @@ int main (int argc, char *argv[])
     read = wavpcm_input_read (&input, buffer);
       
     /* transform buffer (ENCODER) */
-      if (bufPos == BUFFERSIZE*1000) {
-          test = 1;
-      }
-	transmitter(buffer, &encoderChunkLeft, &encoderChunkRight, encodedBuffer, test, &decoderChunkLeft, &decoderChunkRight);
-      if (bufPos == BUFFERSIZE*1100) {
-          test = 0;
-      }
+	transmitter(buffer, &encoderChunkLeft, &encoderChunkRight, encodedBuffer);
+      
     /* if required, dump compressed output */
 
     /* inverse transform buffer (DECODER)*/
-	//receiver(encodedBuffer, buffer, &decoderChunkLeft, &decoderChunkRight, test);
+	receiver(encodedBuffer, buffer, &decoderChunkLeft, &decoderChunkRight);
       for (bufIndex=0; bufIndex<BUFFERSIZE; bufIndex++){
           reconstructedBuffer[bufIndex]=buffer[bufIndex];
-          
       }
+      
     /* dump reconstructed output */
     wavpcm_output_write (&output, reconstructedBuffer, read);
 

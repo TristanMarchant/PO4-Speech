@@ -22,10 +22,10 @@ struct encoderChunk {
 	short deltaPrimeArray4[nbDelta];
 };
 
-void transmitter(short *buffer, struct encoderChunk * encoderLeftChunk, struct encoderChunk *encoderRightChunk, unsigned short encodedBuffer[8], int test, struct decoderChunk * decoderChunkLeft, struct decoderChunk * decoderChunkRight);
-void analysis(short buffer[BUFFERSIZE], short subband1[BUFFERSIZE/8],  short subband2[BUFFERSIZE/8],  short subband3[BUFFERSIZE/8],  short subband4[BUFFERSIZE/8], struct encoderChunk * encoderChunk, int test);
-void ConvolutionStage1(short inputEven[25], short inputOdd[25], long long  C0[10], long long C1[10], int test);
-void ConvolutionStage2(short C0Even[7], short C0Odd[7], short C1Even[7], short C1Odd[7], short subband1[BUFFERSIZE/8],  short subband2[BUFFERSIZE/8],  short subband3[BUFFERSIZE/8],  short subband4[BUFFERSIZE/8], int test);
+void transmitter(short *buffer, struct encoderChunk * encoderLeftChunk, struct encoderChunk *encoderRightChunk, unsigned short encodedBuffer[8]);
+void analysis(short buffer[BUFFERSIZE], short subband1[BUFFERSIZE/8],  short subband2[BUFFERSIZE/8],  short subband3[BUFFERSIZE/8],  short subband4[BUFFERSIZE/8], struct encoderChunk * encoderChunk);
+void ConvolutionStage1(short inputEven[25], short inputOdd[25], long long  C0[BUFFERSIZE/4], long long C1[BUFFERSIZE/4]);
+void ConvolutionStage2(short C0Even[7], short C0Odd[7], short C1Even[7], short C1Odd[7], short subband1[BUFFERSIZE/8],  short subband2[BUFFERSIZE/8],  short subband3[BUFFERSIZE/8],  short subband4[BUFFERSIZE/8]);
 
 void ADPCMencoder(short *subband1, short *subband2, short *subband3, short *subband4, struct encoderChunk * encoderChunk);
 void ADPCMencoderSubband(short *subbandSignal, short mu, short nbBits,

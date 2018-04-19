@@ -12,25 +12,25 @@ struct decoderChunk {
     short stepsize2;
     short stepsize3;
     short stepsize4;
-    short deltaPrimeArray1[10];
-    short deltaPrimeArray2[10];
-    short deltaPrimeArray3[10];
-    short deltaPrimeArray4[10];
+    short deltaPrimeArray1[nbDelta];
+    short deltaPrimeArray2[nbDelta];
+    short deltaPrimeArray3[nbDelta];
+    short deltaPrimeArray4[nbDelta];
     short prevoutput1;
     short prevoutput2;
     short prevoutput3;
     short prevoutput4;
 };
 
-void receiver(unsigned short encodedBuffer[8], short *buffer, struct decoderChunk * decoderChunkLeft, struct decoderChunk * decoderChunkRight, int test);
+void receiver(unsigned short encodedBuffer[8], short *buffer, struct decoderChunk * decoderChunkLeft, struct decoderChunk * decoderChunkRight);
 
-void synthesis(short subband1[5], short subband2[5], short subband3[5], short subband4[5], struct decoderChunk * decoderChunk, short result[20], int test);
+void synthesis(short subband1[BUFFERSIZE/8], short subband2[BUFFERSIZE/8], short subband3[BUFFERSIZE/8], short subband4[BUFFERSIZE/8], struct decoderChunk * decoderChunk, short result[BUFFERSIZE/2]);
 
-void ConvolutionStage1dec(short s20[5],short s21[5], short s22[5], short s23[5], long long f20[5], long long f21[5], long long f22[5], long long f23[5], int test);
-void ConvolutionStage2dec(short s10[10], short s11[10], long long f10[10], long long f11[10], int test);
+void ConvolutionStage1dec(short s20[BUFFERSIZE/8],short s21[BUFFERSIZE/8], short s22[BUFFERSIZE/8], short s23[BUFFERSIZE/8], long long f20[BUFFERSIZE/8], long long f21[BUFFERSIZE/8], long long f22[BUFFERSIZE/8], long long f23[BUFFERSIZE/8]);
+void ConvolutionStage2dec(short s10[BUFFERSIZE/4], short s11[BUFFERSIZE/4], long long f10[BUFFERSIZE/4], long long f11[BUFFERSIZE/4]);
 
-void ADPCMdecoder(short subband1[5], short subband2[5], short subband3[5], short subband4[5], struct decoderChunk * decoderChunk);
+void ADPCMdecoder(short subband1[BUFFERSIZE/8], short subband2[BUFFERSIZE/8], short subband3[BUFFERSIZE/8], short subband4[BUFFERSIZE/8], struct decoderChunk * decoderChunk);
 
-void ADPCMdecoderSubband(short subbandSignal[5], short mu, short n0_bits, short * stepsize, short deltaPrimeArray[10], short PHI, short * prevoutput);
+void ADPCMdecoderSubband(short subbandSignal[BUFFERSIZE/8], short mu, short n0_bits, short * stepsize, short deltaPrimeArray[nbDelta], short PHI, short * prevoutput);
 short twosComplement2Bits(unsigned short value);
 short twosComplement4Bits(unsigned short value);
