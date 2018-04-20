@@ -233,7 +233,7 @@ the result will be stored at the pointer used for the input
 void ADPCMencoderSubband(short * subbandSignal, short mu, short nbBits,
 	short *prediction, short * codebook, short codebookSize, short *stepsize,
 	short * deltaPrimeArray, short stepsizeOptFP) {
-	short delta;
+	int delta;
 	short deltaPrime;
 
 	//iterate over all samples in this subband signal
@@ -268,17 +268,17 @@ void ADPCMencoderSubband(short * subbandSignal, short mu, short nbBits,
 helper function for ADPCMencoderSubband
 quantizes the given value and returns the result
 */
-short quantize(short value, short* codebook, short codebookSize, short stepsize) { // TESTED WORKS!
-	short lowerBound = (codebook[0] + 0.5) * stepsize * 2;
-	short upperBound = (codebook[codebookSize] - 1.5) * stepsize * 2;
-	short i = 0;
-	for (short bound = lowerBound; bound <= upperBound; bound += (2*stepsize)) {
+short quantize(int value, short* codebook, short codebookSize, short stepsize) { // TESTED WORKS! MAYBE SOMETHING WRONG
+	int lowerBound = (codebook[0] + 0.5) * stepsize * 2;
+	int upperBound = (codebook[codebookSize] - 1.5) * stepsize * 2;
+	int i = 0;
+	for (int bound = lowerBound; bound < upperBound; bound += (2*stepsize)) {
 		if (value <= bound) {
 			return codebook[i];
 		}
         i++;
 	}
-	return codebook[i];
+	return codebook[i-1];
 }
 
 /*

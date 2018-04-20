@@ -45,6 +45,8 @@ int main (int argc, char *argv[])
   memset(&output, 0, sizeof(struct wavpcm_output));
   output.resource=OUTPUTWAVFILE;
 
+    
+   
   /* First open input file and parse header, */
   wavpcm_input_open (&input);
   /* and then use this same header configuration for the output file */
@@ -56,13 +58,16 @@ int main (int argc, char *argv[])
     /* into buffer, with read the actual amount read (expressed in bytes! =  (2*read)/(channels * bitDepth/8) array elements)*/
     read = wavpcm_input_read (&input, buffer);
       
+      
     /* transform buffer (ENCODER) */
 	transmitter(buffer, &encoderChunkLeft, &encoderChunkRight, encodedBuffer);
       
+      
     /* if required, dump compressed output */
-
+      
     /* inverse transform buffer (DECODER)*/
 	receiver(encodedBuffer, buffer, &decoderChunkLeft, &decoderChunkRight);
+      
       for (bufIndex=0; bufIndex<BUFFERSIZE; bufIndex++){
           reconstructedBuffer[bufIndex]=buffer[bufIndex];
       }
@@ -71,7 +76,7 @@ int main (int argc, char *argv[])
     wavpcm_output_write (&output, reconstructedBuffer, read);
 
   }
-
+    
   /* finalize output (write header) and close */
   wavpcm_output_close (&output);  
   

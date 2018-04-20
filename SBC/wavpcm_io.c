@@ -330,7 +330,9 @@ void wavpcm_output_close (struct wavpcm_output *output)
 
   /* COMMENT: HAD TO CHANGE STRCPY TO STRNCPY OR ELSE IT WOULDN'T COMPILE */
   strncpy(waveHeader.riff, "RIFF",sizeof(waveHeader.riff));
+  //strcpy(waveHeader.riff, "RIFF");
   strncpy(waveHeader.wavefmt, "WAVEfmt ",sizeof(waveHeader.wavefmt));
+  //strcpy(waveHeader.wavefmt, "WAVEfmt ");
   waveHeader.bitDepth = output->bitDepth;
   waveHeader.blockAlign = output->channels * (output->bitDepth / 8);
   waveHeader.bytesPerSecond = waveHeader.blockAlign * output->samplingRate;
@@ -340,6 +342,7 @@ void wavpcm_output_close (struct wavpcm_output *output)
   waveHeader.type = 1;
   waveHeader.samplingRate = output->samplingRate;
   strncpy(waveChunkHeader.name, "data",sizeof(waveChunkHeader.name));
+  //strcpy(waveChunkHeader.name, "data");
   waveChunkHeader.size = output->dataLength;
 	
   /* We need to seek back to the start of the file and write the header. */

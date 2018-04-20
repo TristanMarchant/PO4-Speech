@@ -31,7 +31,7 @@ void ADPCMencoder(short *subband1, short *subband2, short *subband3, short *subb
 void ADPCMencoderSubband(short *subbandSignal, short mu, short nbBits,
 	short *prediction, short* codebook, short codebookSize, short *stepsize,
 	short *deltaPrimeArray, short stepsizeOptFP);
-short quantize(short value, short* codebook, short codebookSize, short stepsize);
+short quantize(int value, short* codebook, short codebookSize, short stepsize);
 short calculateStepsize(short* deltaPrimeArray, short stepsizeOptFP, short nbBits);
 long long calculateStd(short* deltaPrimeArray);
 short calculateStdFP(short* deltaPrimeArray);
