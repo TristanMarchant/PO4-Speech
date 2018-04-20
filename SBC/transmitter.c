@@ -301,9 +301,8 @@ helper function for calculateStepsize
 calculate the standard deviation of deltaPrimeArray (size: nbDelta)
 does not include a change to floating point
 */
-long long calculateStd(short* deltaPrimeArray) {   // TESTED WORKS!
-	//TODO ask if long long can be used for this
-	long long mean = 0;
+long long calculateStd(short* deltaPrimeArray) {
+	long mean = 0;
 	for (int i = 0; i < nbDelta; i++) {
 		mean += deltaPrimeArray[i];
 	}
@@ -312,7 +311,6 @@ long long calculateStd(short* deltaPrimeArray) {   // TESTED WORKS!
 	long long std = 0;
 	for (int i = 0; i < nbDelta; i++) {
 		std += pow(llabs(deltaPrimeArray[i] - mean), 2);
-        //printf("STD: %f \n", std); // ALL ZEROS NOT GOOD
 	}
 	std = pow(2,18) * std / (nbDelta-1);
 	std = sqrt(std);
