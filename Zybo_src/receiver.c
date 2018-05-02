@@ -29,43 +29,94 @@ void receiver(unsigned short* encodedBuffer, short *buffer, struct decoderChunk 
 	short bufPos;
     
 	/* Bit unpacking */
-	int i;
+    
 	// retrieve the 4-bit values from the encoded buffer, stored in the first 5 shorts as
 	// subband_left1 (4 bits) - subband_left2 (4 bits) - subband_right1 (4 bits) - subband_right2 (4 bits)
-	for (i = 0; i < (BUFFERSIZE/8); i++) {
-		subband1_l[i] = twosComplement4Bits((encodedBuffer[i] & 0xF000) >> 12);
-		subband2_l[i] = twosComplement4Bits((encodedBuffer[i] & 0x0F00) >> 8);
-		subband1_r[i] = twosComplement4Bits((encodedBuffer[i] & 0x00F0) >> 4);
-		subband2_r[i] = twosComplement4Bits((encodedBuffer[i] & 0x000F));
-	}
+	//for (int i = 0; i < (BUFFERSIZE_8); i++) {
+	//	subband1_l[i] = twosComplement4Bits((encodedBuffer[i] & 0xF000) >> 12);
+	//	subband2_l[i] = twosComplement4Bits((encodedBuffer[i] & 0x0F00) >> 8);
+	//	subband1_r[i] = twosComplement4Bits((encodedBuffer[i] & 0x00F0) >> 4);
+	//	subband2_r[i] = twosComplement4Bits((encodedBuffer[i] & 0x000F));
+	//}
+	//loop unrolling
+	subband1_l[0] = twosComplement4Bits((encodedBuffer[0] & 0xF000) >> 12);
+	subband2_l[0] = twosComplement4Bits((encodedBuffer[0] & 0x0F00) >> 8);
+	subband1_r[0] = twosComplement4Bits((encodedBuffer[0] & 0x00F0) >> 4);
+	subband2_r[0] = twosComplement4Bits((encodedBuffer[0] & 0x000F));
+
+	subband1_l[1] = twosComplement4Bits((encodedBuffer[1] & 0xF000) >> 12);
+	subband2_l[1] = twosComplement4Bits((encodedBuffer[1] & 0x0F00) >> 8);
+	subband1_r[1] = twosComplement4Bits((encodedBuffer[1] & 0x00F0) >> 4);
+	subband2_r[1] = twosComplement4Bits((encodedBuffer[1] & 0x000F));
+
+	subband1_l[2] = twosComplement4Bits((encodedBuffer[2] & 0xF000) >> 12);
+	subband2_l[2] = twosComplement4Bits((encodedBuffer[2] & 0x0F00) >> 8);
+	subband1_r[2] = twosComplement4Bits((encodedBuffer[2] & 0x00F0) >> 4);
+	subband2_r[2] = twosComplement4Bits((encodedBuffer[2] & 0x000F));
+
+	subband1_l[3] = twosComplement4Bits((encodedBuffer[3] & 0xF000) >> 12);
+	subband2_l[3] = twosComplement4Bits((encodedBuffer[3] & 0x0F00) >> 8);
+	subband1_r[3] = twosComplement4Bits((encodedBuffer[3] & 0x00F0) >> 4);
+	subband2_r[3] = twosComplement4Bits((encodedBuffer[3] & 0x000F));
+
+	subband1_l[4] = twosComplement4Bits((encodedBuffer[4] & 0xF000) >> 12);
+	subband2_l[4] = twosComplement4Bits((encodedBuffer[4] & 0x0F00) >> 8);
+	subband1_r[4] = twosComplement4Bits((encodedBuffer[4] & 0x00F0) >> 4);
+	subband2_r[4] = twosComplement4Bits((encodedBuffer[4] & 0x000F));
+
 
 	// retrieve the 2-bit values from the encoded buffer, stored in the last 3 shorts
-	for (i = 0; i < (BUFFERSIZE/8); i++) {
-		//if i is even 
-		if ( !(i % 2) ) {
-			bufPos = 5 + i / 2;
-			subband3_l[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0xC000) >> 14);
-			subband4_l[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x3000) >> 12);
-			subband3_r[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x0C00) >> 10);
-			subband4_r[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x0300) >> 8);
-		}
-		//if i is uneven
-		else {
-			bufPos = 5 + (i - 1) / 2;
-			subband3_l[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x00C0) >> 6);
-			subband4_l[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x0030) >> 4);
-			subband3_r[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x000C) >> 2);
-			subband4_r[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x0003));
-		}
-	}
-   
+	//for (int i = 0; i < (BUFFERSIZE_8); i++) {
+	//	//if i is even 
+	//	if ( !(i % 2) ) {
+	//		bufPos = 5 + i / 2;
+	//		subband3_l[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0xC000) >> 14);
+	//		subband4_l[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x3000) >> 12);
+	//		subband3_r[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x0C00) >> 10);
+	//		subband4_r[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x0300) >> 8);
+	//	}
+	//	//if i is uneven
+	//	else {
+	//		bufPos = 5 + (i - 1) / 2;
+	//		subband3_l[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x00C0) >> 6);
+	//		subband4_l[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x0030) >> 4);
+	//		subband3_r[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x000C) >> 2);
+	//		subband4_r[i] = twosComplement2Bits((encodedBuffer[bufPos] & 0x0003));
+	//	}
+	//}
+	//loop unrolling
+	subband3_l[0] = twosComplement2Bits((encodedBuffer[5] & 0xC000) >> 14);
+	subband4_l[0] = twosComplement2Bits((encodedBuffer[5] & 0x3000) >> 12);
+	subband3_r[0] = twosComplement2Bits((encodedBuffer[5] & 0x0C00) >> 10);
+	subband4_r[0] = twosComplement2Bits((encodedBuffer[5] & 0x0300) >> 8);
+
+	subband3_l[1] = twosComplement2Bits((encodedBuffer[5] & 0x00C0) >> 6);
+	subband4_l[1] = twosComplement2Bits((encodedBuffer[5] & 0x0030) >> 4);
+	subband3_r[1] = twosComplement2Bits((encodedBuffer[5] & 0x000C) >> 2);
+	subband4_r[1] = twosComplement2Bits((encodedBuffer[5] & 0x0003));
+
+	subband3_l[2] = twosComplement2Bits((encodedBuffer[6] & 0xC000) >> 14);
+	subband4_l[2] = twosComplement2Bits((encodedBuffer[6] & 0x3000) >> 12);
+	subband3_r[2] = twosComplement2Bits((encodedBuffer[6] & 0x0C00) >> 10);
+	subband4_r[2] = twosComplement2Bits((encodedBuffer[6] & 0x0300) >> 8);
+
+	subband3_l[3] = twosComplement2Bits((encodedBuffer[6] & 0x00C0) >> 6);
+	subband4_l[3] = twosComplement2Bits((encodedBuffer[6] & 0x0030) >> 4);
+	subband3_r[3] = twosComplement2Bits((encodedBuffer[6] & 0x000C) >> 2);
+	subband4_r[3] = twosComplement2Bits((encodedBuffer[6] & 0x0003));
+
+	subband3_l[4] = twosComplement2Bits((encodedBuffer[7] & 0xC000) >> 14);
+	subband4_l[4] = twosComplement2Bits((encodedBuffer[7] & 0x3000) >> 12);
+	subband3_r[4] = twosComplement2Bits((encodedBuffer[7] & 0x0C00) >> 10);
+	subband4_r[4] = twosComplement2Bits((encodedBuffer[7] & 0x0300) >> 8);
+
     /* Decode LEFT */
     ADPCMdecoder(subband1_l,subband2_l,subband3_l,subband4_l,decoderChunkLeft);
     /* Decode RIGHT */
     ADPCMdecoder(subband1_r,subband2_r,subband3_r,subband4_r,decoderChunkRight);
 	
-    short resultLeft[BUFFERSIZE/2];
-    short resultRight[BUFFERSIZE/2];
+    short resultLeft[BUFFERSIZE_2];
+    short resultRight[BUFFERSIZE_2];
     
 	/* Synthesis LEFT */
     synthesis(subband1_l,subband2_l,subband3_l,subband4_l,decoderChunkLeft,resultLeft);
@@ -73,9 +124,9 @@ void receiver(unsigned short* encodedBuffer, short *buffer, struct decoderChunk 
     synthesis(subband1_r,subband2_r,subband3_r,subband4_r,decoderChunkRight,resultRight);
     
     // Interleave LEFT and RIGHT
-    for (i = 0; i < BUFFERSIZE; i+=2) {
-        buffer[i] = resultLeft[i/2];
-        buffer[i+1] = resultRight[i/2];
+    for (int i = 0; i < BUFFERSIZE; i+=2) { //TODO loop unrolling or loop termination
+        buffer[i] = resultLeft[i>>1];
+        buffer[i+1] = resultRight[i>>1];
     }
 }
 
@@ -120,10 +171,8 @@ void synthesis(short * subband1, short * subband2, short * subband3, short * sub
 	short s22[5] = {0};
 	short s23[5] = {0};
 
-	int i;
-
     // Intermediate result from new buffer
-	for (i = 0; i < 5; i++) {
+	for (int i = 0; i < 5; i++) {  //TODO loop unrolling or loop termination
 		s20[i] = subband1[i] + subband2[i];
 		s21[i] = subband1[i] - subband2[i];
 		s22[i] = subband3[i] + subband4[i];
@@ -132,7 +181,7 @@ void synthesis(short * subband1, short * subband2, short * subband3, short * sub
 	}
     
 	// Update chunk, put the old values in front and the newest in the back
-	for (i = 0; i<12; i++) {
+	for (int i = 0; i<12; i++) { //TODO loop unrolling or loop termination
 	  if (i<7) {
 		  decoderChunk->prevBufferS20[i] = decoderChunk -> prevBufferS20[i+5];
 		  decoderChunk->prevBufferS21[i] = decoderChunk -> prevBufferS21[i+5];
@@ -162,25 +211,36 @@ void synthesis(short * subband1, short * subband2, short * subband3, short * sub
 	short result2[10] = {0};
 
     // Interleave results from stage 1
-	for (i = 0; i<10 ; i+=2) {
-		result1[i] = f21[i/2];
-		result1[i+1] = f20[i/2];
-		result2[i] = f23[i/2];
-		result2[i+1] = f22[i/2];
-	}
+	//for (int i = 0; i<10 ; i+=2) {
+	//	result1[i] = f21[i/2];
+	//	result1[i+1] = f20[i/2];
+	//	result2[i] = f23[i/2];
+	//	result2[i+1] = f22[i/2];
+	//}
+	//loop unrolling
+	result1[0] = f21[0]; result1[1] = f20[0];
+	result2[0] = f23[0]; result2[1] = f22[0];
+	result1[2] = f21[1]; result1[3] = f20[1];
+	result2[2] = f23[1]; result2[3] = f22[1];
+	result1[4] = f21[2]; result1[5] = f20[2];
+	result2[4] = f23[2]; result2[5] = f22[2];
+	result1[6] = f21[3]; result1[7] = f20[3];
+	result2[6] = f23[3]; result2[7] = f22[3];
+	result1[8] = f21[4]; result1[9] = f20[4];
+	result2[8] = f23[4]; result2[9] = f22[4];
     
 	short s10[10] = {0};
 	short s11[10] = {0};
 
     // Intermediate result as the input for the convolution
-	for (i = 0; i < 10; i++) { // WAUW 5 ipv 10
+	for (int i = 0; i < 10; i++) { //TODO loop unrolling or loop termination
 		s10[i] = result1[i] + result2[i];
 		s11[i] = result1[i] - result2[i];
 	}
 	
 
 	// Update the chunk
-	for (i = 0; i<25; i++) {
+	for (int i = 0; i<25; i++) { //TODO loop unrolling or loop termination
 		if (i<15) {
 			decoderChunk->prevBufferS10[i] = decoderChunk -> prevBufferS10[i+10];
 			decoderChunk->prevBufferS11[i] = decoderChunk -> prevBufferS11[i+10];
@@ -197,10 +257,21 @@ void synthesis(short * subband1, short * subband2, short * subband3, short * sub
     // Execute convolution stage 2
 	ConvolutionStage2dec(decoderChunk->prevBufferS10,decoderChunk->prevBufferS11,f10,f11);
 
-	for (i = 0; i<20; i+=2) {
-		result[i] = f11[i/2];
-		result[i+1] = f10[i/2];
-	}
+	//for (int i = 0; i<20; i+=2) {
+	//	result[i] = f11[i/2];
+	//	result[i+1] = f10[i/2];
+	//}
+	//loop unrolling
+	result[0] = f11[0];
+	result[1] = f10[0];
+	result[2] = f11[1];
+	result[2] = f10[1];
+	result[4] = f11[2];
+	result[5] = f10[2];
+	result[6] = f11[3];
+	result[7] = f10[3];
+	result[8] = f11[4];
+	result[9] = f10[4];
 }
 
 /* Convolution Stage 1 decoder
@@ -209,21 +280,18 @@ void synthesis(short * subband1, short * subband2, short * subband3, short * sub
  Outputs:   - f2x: The results from the convolution are stored in these variables
  */
 void ConvolutionStage1dec(short * s20,short * s21, short * s22, short * s23, long long * f20, long long * f21, long long * f22, long long * f23) {
-
-	int i,j;
-
-	for (i = 7; i<12; i++) {
-		  for (j=0; j<8;j++) {
+	  for (int i = 7; i<12; i++) {
+		  for (int j=0; j<8;j++) {
 			f21 [i-7] += s21[i-j]*f2_even[j];
 			f20 [i-7] += s20[i-j]*f2_odd[j];
 			f23 [i-7] += s23[i-j]*f2_even[j];
 			f22 [i-7] += s22[i-j]*f2_odd[j];
               
 		  }
-          f21[i-7] = f21[i-7]/pow(2,14);
-          f20[i-7] = f20[i-7]/pow(2,14);
-          f23[i-7] = f23[i-7]/pow(2,14);
-          f22[i-7] = f22[i-7]/pow(2,14);
+          f21[i-7] = f21[i-7]>>14;//avoid division
+          f20[i-7] = f20[i-7]>>14;//avoid division
+          f23[i-7] = f23[i-7]>>14;//avoid division
+          f22[i-7] = f22[i-7]>>14;//avoid division
         
 	  }
 }
@@ -234,17 +302,13 @@ void ConvolutionStage1dec(short * s20,short * s21, short * s22, short * s23, lon
  Outputs:   - f1x: The results from the convolution are stored in these variables
  */
 void ConvolutionStage2dec(short * s10, short * s11, long long * f10, long long * f11) {
-
-	int i,j;
-
-	for (i = 15; i<25; i++) {
-		  for (j=0; j<16;j++) {
+	  for (int i = 15; i<25; i++) {
+		  for (int j=0; j<16;j++) {
 			  f11[i-15] += s11[i-j]*f0_even[j];
 			  f10[i-15] += s10[i-j]*f0_odd[j];
 		  }
-          f11[i-15] = f11[i-15]/pow(2,14);
-          f10[i-15] = f10[i-15]/pow(2,14);
-         
+          f11[i-15] = f11[i-15]>>14; //avoid division
+          f10[i-15] = f10[i-15]>>14; //avoid division
 	  }
 }
 
@@ -257,16 +321,16 @@ void ConvolutionStage2dec(short * s10, short * s11, long long * f10, long long *
 void ADPCMdecoder(short * subband1, short * subband2, short * subband3, short * subband4, struct decoderChunk * decoderChunk) {
     
     /* Decode Subband1 */
-    ADPCMdecoderSubband(subband1,mu_1,4,&decoderChunk->stepsize1,decoderChunk->deltaPrimeArray1,phi_4,&decoderChunk->prevoutput1);
+    ADPCMdecoderSubband(subband1,mu_1,&decoderChunk->stepsize1,decoderChunk->deltaPrimeArray1,phi_4_updated,&decoderChunk->prevoutput1);
     
     /* Decode Subband2 */
-    ADPCMdecoderSubband(subband2,mu_2,4,&decoderChunk->stepsize2,decoderChunk->deltaPrimeArray2,phi_4,&decoderChunk->prevoutput2);
+    ADPCMdecoderSubband(subband2,mu_2,&decoderChunk->stepsize2,decoderChunk->deltaPrimeArray2,phi_4_updated,&decoderChunk->prevoutput2);
     
     /* Decode Subband3 */
-    ADPCMdecoderSubband(subband3,mu_3,2,&decoderChunk->stepsize3,decoderChunk->deltaPrimeArray3,phi_2,&decoderChunk->prevoutput3);
+    ADPCMdecoderSubband(subband3,mu_3,&decoderChunk->stepsize3,decoderChunk->deltaPrimeArray3,phi_2_updated,&decoderChunk->prevoutput3);
     
     /* Decode Subband4 */
-    ADPCMdecoderSubband(subband4,mu_4,2,&decoderChunk->stepsize4,decoderChunk->deltaPrimeArray4,phi_2,&decoderChunk->prevoutput4);
+    ADPCMdecoderSubband(subband4,mu_4,&decoderChunk->stepsize4,decoderChunk->deltaPrimeArray4,phi_2_updated,&decoderChunk->prevoutput4);
     
 }
 
@@ -281,30 +345,38 @@ void ADPCMdecoder(short * subband1, short * subband2, short * subband3, short * 
             - the previous output needed for decoding
  Outputs:   - the decoded subband is saved in the original subband input
  */
-void ADPCMdecoderSubband(short * subbandSignal, short mu, short n0_bits, short * stepsize, short * deltaPrimeArray, short PHI, short * prevoutput) {
+void ADPCMdecoderSubband(short * subbandSignal, short mu, short * stepsize, short * deltaPrimeArray, short phi_updated, short * prevoutput) {
     
     short delta_prime;
-    int i,j;
-
-    for (i = 0; i<5; i++) {
+    for (int i = 0; i<5; i++) {
         
         // Shift delta prime array to get the 10 most recent samples for the stepsize calculation
-        for (j = 0; j < 9; j++) {
-            deltaPrimeArray[j] = deltaPrimeArray[j+1];
-        }
-        
+        //for (int j = 0; j < 9; j++) {
+        //    deltaPrimeArray[j] = deltaPrimeArray[j+1];
+        //}
+		//loop unrolling
+		deltaPrimeArray[0] = deltaPrimeArray[1];
+		deltaPrimeArray[1] = deltaPrimeArray[2];
+		deltaPrimeArray[2] = deltaPrimeArray[3];
+		deltaPrimeArray[3] = deltaPrimeArray[4];
+		deltaPrimeArray[4] = deltaPrimeArray[5];
+		deltaPrimeArray[5] = deltaPrimeArray[6];
+		deltaPrimeArray[6] = deltaPrimeArray[7];
+		deltaPrimeArray[7] = deltaPrimeArray[8];
+		deltaPrimeArray[8] = deltaPrimeArray[9];
+
         // Calculate new delta prime
         delta_prime = subbandSignal[i] * *stepsize;
         deltaPrimeArray[9] = delta_prime;
         
         // Update stepsize
-        *stepsize = calculateStepsize(deltaPrimeArray,PHI,n0_bits);
+        *stepsize = calculateStepsize(deltaPrimeArray,phi_updated);
         if (*stepsize == 0) {
             *stepsize = 1;
         }
         
         // Calculate output
-        subbandSignal[i] = delta_prime + (mu * *prevoutput)/pow(2,15);
+        subbandSignal[i] = delta_prime + ((mu * *prevoutput) >> 15); //delta_prime + (mu * *prevoutput) / pow(2, 15) changed to delta_prime + ((mu * *prevoutput) >> 15) to avoid division
         
         // Update prevoutput
         *prevoutput = subbandSignal[i];

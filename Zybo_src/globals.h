@@ -1,8 +1,9 @@
 
 /* represents buffer array elements: equivalent to BUFFERSIZE/2 temporal sample positions */
 #define BUFFERSIZE 40
-
-#define DATASIZE 32 // For interface with CRYPTO: 512 bits (32 x shorts(16))
+#define BUFFERSIZE_2 20
+#define BUFFERSIZE_4 10
+#define BUFFERSIZE_8 5
 
 #define INPUTWAVFILE  "input.wav"
 #define OUTPUTWAVFILE "output.wav"
@@ -24,6 +25,9 @@
 
 #define phi_4 86
 #define phi_2 255
+
+#define phi_4_updated 105
+#define phi_2_updated 293
 
 #define VERBOSE
 

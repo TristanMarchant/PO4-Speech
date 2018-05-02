@@ -31,6 +31,6 @@ void ConvolutionStage2dec(short s10[BUFFERSIZE/4], short s11[BUFFERSIZE/4], long
 
 void ADPCMdecoder(short subband1[BUFFERSIZE/8], short subband2[BUFFERSIZE/8], short subband3[BUFFERSIZE/8], short subband4[BUFFERSIZE/8], struct decoderChunk * decoderChunk);
 
-void ADPCMdecoderSubband(short subbandSignal[BUFFERSIZE/8], short mu, short n0_bits, short * stepsize, short deltaPrimeArray[nbDelta], short PHI, short * prevoutput);
+void ADPCMdecoderSubband(short subbandSignal[BUFFERSIZE/8], short mu, short * stepsize, short deltaPrimeArray[nbDelta], short phi_updated, short * prevoutput);
 short twosComplement2Bits(unsigned short value);
 short twosComplement4Bits(unsigned short value);
