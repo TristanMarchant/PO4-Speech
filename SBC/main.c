@@ -1,7 +1,8 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 #include "wavpcm_io.h"
 #include "globals.h"
 #include "transmitter.h"
@@ -10,6 +11,7 @@
 /* This is the function that is called when the program starts. */
 int main (int argc, char *argv[])
 {
+  clock_t begin = clock();
   /* Variable declarations. */
   struct wavpcm_input input;
   struct wavpcm_output output;
@@ -79,6 +81,10 @@ int main (int argc, char *argv[])
     
   /* finalize output (write header) and close */
   wavpcm_output_close (&output);  
+
+  clock_t end = clock();
+  double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+  printf("time spent: %f \n", time_spent);
   
   /* Return successful exit code. */
   return 0;
